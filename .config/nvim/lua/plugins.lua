@@ -185,15 +185,15 @@ return {
       { "<leader>gd", mode = { "n" }, require('telescope.builtin').lsp_definitions, desc = "lsp definitions" },
     },
   },
-  {
-    "stevearc/oil.nvim",
-    opts = {},
-    event = "VeryLazy",
-    keys = {
-      { "\\", mode = { "n" }, "<cmd>Oil<cr>", desc = "open parent directory" , silent=true, noremap=true}
-    },
-    cmd = "Oil",
-  },
+  -- {
+  --   "stevearc/oil.nvim",
+  --   opts = {},
+  --   event = "VeryLazy",
+  --   keys = {
+  --     { "\\", mode = { "n" }, "<cmd>Oil<cr>", desc = "open parent directory" , silent=true, noremap=true}
+  --   },
+  --   cmd = "Oil",
+  -- },
   {
     "folke/flash.nvim",
     event = "VeryLazy",
@@ -210,8 +210,8 @@ return {
     },
     -- stylua: ignore
     keys = {
-      { "<Enter>", mode = { "n", "x", "o" }, function() require("flash").jump() end, desc = "Flash" },
-      { "<S-Enter>", mode = { "n", "x", "o" }, function() require("flash").treesitter() end, desc = "Flash Treesitter" },
+      { "s", mode = { "n", "x", "o" }, function() require("flash").jump() end, desc = "Flash" },
+      { "S", mode = { "n", "x", "o" }, function() require("flash").treesitter() end, desc = "Flash Treesitter" },
       { "r", mode = "o", function() require("flash").remote() end, desc = "Remote Flash" },
       { "R", mode = { "o", "x" }, function() require("flash").treesitter_search() end, desc = "Treesitter Search" },
     },
@@ -249,16 +249,20 @@ return {
     'echasnovski/mini.nvim',
     version = false,
     config = function(_, opts)
-      require('mini.bracketed').setup({})
+      require('mini.bracketed').setup()
+      require('mini.files').setup()
+      local icons = require('mini.icons')
+      icons.setup()
+      icons.mock_nvim_web_devicons()
       require('mini.surround').setup({
         mappings = {
-          add = 'sa', -- Add surrounding in Normal and Visual modes
-          delete = 'sd', -- Delete surrounding
-          find = 'sf', -- Find surrounding (to the right)
-          find_left = 'sF', -- Find surrounding (to the left)
-          highlight = 'sh', -- Highlight surrounding
-          replace = 'sr', -- Replace surrounding
-          update_n_lines = 'sn', -- Update `n_lines`
+          add = '<leader>s', -- Add surrounding in Normal and Visual modes
+          delete = '<leader>sd', -- Delete surrounding
+          find = '<leader>ss', -- Find surrounding (to the right)
+          find_left = '<leader>sS', -- Find surrounding (to the left)
+          highlight = '', -- Highlight surrounding
+          replace = '<leader>sr', -- Replace surrounding
+          update_n_lines = '', -- Update `n_lines`
 
           suffix_last = 'l', -- Suffix to search with "prev" method
           suffix_next = 'n', -- Suffix to search with "next" method
@@ -270,7 +274,7 @@ return {
     'akinsho/bufferline.nvim',
     version = "*",
     dependencies = {
-      'nvim-tree/nvim-web-devicons',
+      'echasnovski/mini.nvim',
       'catppuccin',
     },
     config = function(_, opts)
