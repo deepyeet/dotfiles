@@ -79,44 +79,49 @@ return {
     'nvim-treesitter/nvim-treesitter-textobjects',
     opts = {
       textobjects = {
-        move = {
-          enable = true,
-          set_jumps = true, -- whether to set jumps in the jumplist
-          goto_next_start = {
-            ["]m"] = "@function.outer",
-            ["]]"] = { query = "@class.outer", desc = "Next class start" },
-            --
-            -- You can use regex matching (i.e. lua pattern) and/or pass a list in a "query" key to group multiple queries.
-            ["]o"] = "@loop.*",
-            -- ["]o"] = { query = { "@loop.inner", "@loop.outer" } }
-            --
-            -- You can pass a query group to use query from `queries/<lang>/<query_group>.scm file in your runtime path.
-            -- Below example nvim-treesitter's `locals.scm` and `folds.scm`. They also provide highlights.scm and indent.scm.
-            ["]s"] = { query = "@local.scope", query_group = "locals", desc = "Next scope" },
-            ["]z"] = { query = "@fold", query_group = "folds", desc = "Next fold" },
-          },
-          goto_next_end = {
-            ["]M"] = "@function.outer",
-            ["]["] = "@class.outer",
-          },
-          goto_previous_start = {
-            ["[m"] = "@function.outer",
-            ["[["] = "@class.outer",
-          },
-          goto_previous_end = {
-            ["[M"] = "@function.outer",
-            ["[]"] = "@class.outer",
-          },
-        },
-        swap = {
-          enable = true,
-          swap_next = {
-            ["<leader>a"] = "@parameter.inner",
-          },
-          swap_previous = {
-            ["<leader>A"] = "@parameter.inner",
-          },
-        },
+	move = {
+	  enable = true,
+	  set_jumps = true, -- whether to set jumps in the jumplist
+	  goto_next_start = {
+	    ["]m"] = "@function.outer",
+	    ["]]"] = "@class.outer",
+            ["]/"] = "@comment.outer",
+            [")"] = "@statement.outer",
+	  },
+	  goto_next_end = {
+	    ["]M"] = "@function.outer",
+	    ["]["] = "@class.outer",
+	  },
+	  goto_previous_start = {
+	    ["[m"] = "@function.outer",
+	    ["[["] = "@class.outer",
+            ["[/"] = "@comment.outer",
+            ["("] = "@statement.outer",
+	  },
+	  goto_previous_end = {
+	    ["[M"] = "@function.outer",
+	    ["[]"] = "@class.outer",
+	  },
+	},
+	select = {
+	  enable = true,
+
+	  -- Automatically jump forward to textobj, similar to targets.vim
+	  lookahead = true,
+
+	  keymaps = {
+	    -- You can use the capture groups defined in textobjects.scm
+	    ["af"] = "@function.outer",
+	    ["if"] = "@function.inner",
+	    ["ac"] = "@class.outer",
+	    ["ic"] = "@class.inner",
+	    ["as"] = "@statement.outer",
+	    ["ap"] = "@parameter.outer",
+	    ["ip"] = "@parameter.inner",
+	    ["a/"] = "@comment.outer",
+	    ["i/"] = "@comment.inner",
+	  },
+	},
       },
     },
     config = function(_, opts)
@@ -164,8 +169,8 @@ return {
       { "<leader>r", mode = { "n" }, require('telescope.builtin').live_grep, desc = "live ripgrep" },
       { "<leader>R", mode = { "n" }, require('telescope.builtin').grep_string, desc = "ripgrep string" },
       { "<leader>c", mode = { "n" }, require('telescope.builtin').current_buffer_fuzzy_find, desc = "fuzzy find" },
-      { "<leader>C", mode = { "n" }, require('telescope.builtin').resume, desc = "resume" },
       { "<leader>b", mode = { "n" }, require('telescope.builtin').buffers, desc = "buffers" },
+      { "<leader>ff", mode = { "n" }, require('telescope.builtin').resume, desc = "resume" },
       { "<leader>fb", mode = { "n" }, require('telescope.builtin').buffers, desc = "buffers" },
       { "<leader>fh", mode = { "n" }, require('telescope.builtin').oldfiles, desc = "old files" },
       { "<leader>f:", mode = { "n" }, require('telescope.builtin').command_history, desc = "command history" },
@@ -185,7 +190,7 @@ return {
     opts = {},
     event = "VeryLazy",
     keys = {
-      { "-", mode = { "n" }, "<cmd>Oil<cr>", desc = "Open parent directory" , silent=true, noremap=true}
+      { "\\", mode = { "n" }, "<cmd>Oil<cr>", desc = "open parent directory" , silent=true, noremap=true}
     },
     cmd = "Oil",
   },
@@ -205,8 +210,8 @@ return {
     },
     -- stylua: ignore
     keys = {
-      { "s", mode = { "n", "x", "o" }, function() require("flash").jump() end, desc = "Flash" },
-      { "S", mode = { "n", "x", "o" }, function() require("flash").treesitter() end, desc = "Flash Treesitter" },
+      { "<Enter>", mode = { "n", "x", "o" }, function() require("flash").jump() end, desc = "Flash" },
+      { "<S-Enter>", mode = { "n", "x", "o" }, function() require("flash").treesitter() end, desc = "Flash Treesitter" },
       { "r", mode = "o", function() require("flash").remote() end, desc = "Remote Flash" },
       { "R", mode = { "o", "x" }, function() require("flash").treesitter_search() end, desc = "Treesitter Search" },
     },
@@ -245,22 +250,26 @@ return {
     version = false,
     config = function(_, opts)
       require('mini.bracketed').setup({})
-      require('mini.map').setup({})
-      require('mini.sessions').setup()
       require('mini.surround').setup({
         mappings = {
-          add = '<leader>sa', -- Add surrounding in Normal and Visual modes
-          delete = '<leader>sd', -- Delete surrounding
-          find = '<leader>sf', -- Find surrounding (to the right)
-          find_left = '<leader>sF', -- Find surrounding (to the left)
-          highlight = '<leader>sh', -- Highlight surrounding
-          replace = '<leader>sr', -- Replace surrounding
-          update_n_lines = '<leader>sn', -- Update `n_lines`
+          add = 'sa', -- Add surrounding in Normal and Visual modes
+          delete = 'sd', -- Delete surrounding
+          find = 'sf', -- Find surrounding (to the right)
+          find_left = 'sF', -- Find surrounding (to the left)
+          highlight = 'sh', -- Highlight surrounding
+          replace = 'sr', -- Replace surrounding
+          update_n_lines = 'sn', -- Update `n_lines`
 
           suffix_last = 'l', -- Suffix to search with "prev" method
           suffix_next = 'n', -- Suffix to search with "next" method
         },
       })
     end,
+  },
+  {
+    'akinsho/bufferline.nvim',
+    version = "*",
+    dependencies = 'nvim-tree/nvim-web-devicons',
+    opts = {},
   },
 }
