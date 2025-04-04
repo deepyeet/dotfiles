@@ -159,14 +159,15 @@ return {
     keys = {
       { "<C-p>", mode = { "n" }, require('telescope.builtin').find_files, desc = "find files" },
       { "<C-n>", mode = { "n" }, function ()
-        require('telescope.builtin').find_files({ search_dirs = { "." } })
+        require('telescope.builtin').find_files({ search_dirs = { "%:p:h" } })
       end, desc = "Files (cwd)" },
       { "<leader>r", mode = { "n" }, require('telescope.builtin').live_grep, desc = "live ripgrep" },
       { "<leader>R", mode = { "n" }, require('telescope.builtin').grep_string, desc = "ripgrep string" },
       { "<leader>c", mode = { "n" }, require('telescope.builtin').current_buffer_fuzzy_find, desc = "fuzzy find" },
       { "<leader>C", mode = { "n" }, require('telescope.builtin').resume, desc = "resume" },
       { "<leader>b", mode = { "n" }, require('telescope.builtin').buffers, desc = "buffers" },
-      { "<leader>fh", mode = { "n" }, require('telescope.builtin').old_files, desc = "old files" },
+      { "<leader>fb", mode = { "n" }, require('telescope.builtin').buffers, desc = "buffers" },
+      { "<leader>fh", mode = { "n" }, require('telescope.builtin').oldfiles, desc = "old files" },
       { "<leader>f:", mode = { "n" }, require('telescope.builtin').command_history, desc = "command history" },
       { "<leader>f/", mode = { "n" }, require('telescope.builtin').search_history, desc = "search history" },
       { "<leader>ft", mode = { "n" }, require('telescope.builtin').tags, desc = "tags" },
@@ -245,7 +246,7 @@ return {
     config = function(_, opts)
       require('mini.bracketed').setup({})
       require('mini.map').setup({})
-      require('mini.pairs').setup({})
+      require('mini.sessions').setup()
       require('mini.surround').setup({
         mappings = {
           add = '<leader>sa', -- Add surrounding in Normal and Visual modes
