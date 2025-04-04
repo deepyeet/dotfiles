@@ -269,7 +269,19 @@ return {
   {
     'akinsho/bufferline.nvim',
     version = "*",
-    dependencies = 'nvim-tree/nvim-web-devicons',
-    opts = {},
+    dependencies = {
+      'nvim-tree/nvim-web-devicons',
+      'catppuccin',
+    },
+    config = function(_, opts)
+      require("bufferline").setup {
+        highlights = require("catppuccin.groups.integrations.bufferline").get()
+      }
+    end
+  },
+  {
+    "chrisgrieser/nvim-early-retirement",
+    config = true,
+    event = "VeryLazy",
   },
 }
