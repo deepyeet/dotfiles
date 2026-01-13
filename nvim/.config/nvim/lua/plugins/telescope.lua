@@ -4,6 +4,7 @@ return {
     dependencies = {
       { 'nvim-telescope/telescope-fzf-native.nvim', build = 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release --target install' },
       { 'nvim-telescope/telescope-ui-select.nvim' },
+      { 'jvgrootveld/telescope-zoxide' },
     },
     config = function()
       local telescope = require("telescope")
@@ -25,12 +26,22 @@ return {
             override_generic_sorter = true,  -- override the generic sorter
             override_file_sorter = true,     -- override the file sorter
             case_mode = "smart_case",        -- or "ignore_case" or "respect_case"
-            -- the default case_mode is "smart_case"
-          }
+          },
+          zoxide = {
+            prompt_title = "Zoxide → tcd",
+            mappings = {
+              default = {
+                action = function(selection)
+                  vim.cmd.tcd(selection.path)
+                end,
+              },
+            },
+          },
         }
       }
       telescope.load_extension("fzf")
       telescope.load_extension("ui-select")
+      telescope.load_extension("zoxide")
     end,
     keys = function()
       local builtin = require('telescope.builtin')
@@ -82,30 +93,8 @@ return {
             end,
           }):find()
         end, desc = "tabs" },
-        -- Recent directories (extracted from oldfiles) - tcd into them
-        { "<leader>z", function()
-          local seen, dirs = {}, {}
-          for _, f in ipairs(vim.v.oldfiles) do
-            local dir = vim.fn.fnamemodify(f, ":h")
-            if not seen[dir] and vim.fn.isdirectory(dir) == 1 then
-              seen[dir] = true
-              table.insert(dirs, dir)
-            end
-          end
-          require('telescope.pickers').new({}, {
-            prompt_title = "Recent Dirs → tcd",
-            finder = require('telescope.finders').new_table({ results = dirs }),
-            sorter = require('telescope.config').values.generic_sorter({}),
-            attach_mappings = function(_, map)
-              map('i', '<CR>', function(bufnr)
-                local entry = require('telescope.actions.state').get_selected_entry()
-                require('telescope.actions').close(bufnr)
-                if entry then vim.cmd("tcd " .. vim.fn.fnameescape(entry.value)) end
-              end)
-              return true
-            end,
-          }):find()
-        end, desc = "recent dirs (tcd)" },
+        -- Zoxide integration (uses shell's zoxide database)
+        { "<leader>z", "<cmd>Telescope zoxide list<cr>", desc = "zoxide (tcd)" },
       }
     end,
   },
