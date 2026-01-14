@@ -163,31 +163,17 @@ zinit light zdharma-continuum/fast-syntax-highlighting
 # ==============================================================================
 # 4. COMPLETION SETTINGS
 # ==============================================================================
-# These zstyles configure how tab completion behaves.
-# Loaded after compinit (handled by zinit above).
+# fzf-tab replaces the menu UI; we only need matching logic and cache.
 # ==============================================================================
 
 zmodload -i zsh/complist
-setopt glob_complete      # Tab on * opens menu instead of expanding
-setopt complete_in_word   # Complete from middle of word
-setopt always_to_end      # Move cursor to end after completion
+setopt complete_in_word always_to_end
 
-# Matching: case-insensitive, partial, substring
-# Tried in order until match found
+# Matching: case-insensitive, exact, partial-suffix, substring (tried in order)
 zstyle ':completion:*' matcher-list \
-    'm:{[:lower:][:upper:]-_}={[:upper:][:lower:]_-}' \
-    '' \
-    'r:|[-_.]=*' \
-    'r:|?=**'
+    'm:{[:lower:][:upper:]-_}={[:upper:][:lower:]_-}' '' 'r:|[-_.]=*' 'r:|?=**'
 
-zstyle ':completion:*' menu select                          # Arrow key menu
-zstyle ':completion:*:default' list-colors ${(s.:.)LS_COLORS}
-zstyle ':completion:*:default' list-prompt '%S%M matches%s'
-zstyle ':completion:*' verbose yes
-zstyle ':completion:*' group-name ''
-zstyle ':completion:*:descriptions' format '%F{white}%B%d%b%f'
-
-# Cache completions for faster repeated use
+# Cache completions
 zstyle ':completion::complete:*' use-cache yes
 zstyle ':completion::complete:*' cache-path "$ZSH_CACHE_DIR/compcache"
 
@@ -236,23 +222,8 @@ bindkey -M vicmd 'j' history-substring-search-down
 # Autosuggestions: Ctrl+Space to accept
 bindkey '^ ' autosuggest-accept
 
-# Ctrl+Z: toggle between fg and bg (or push current line)
-function fancy-ctrl-z() {
-    if [[ $#BUFFER -eq 0 ]]; then
-        BUFFER="fg"
-        zle accept-line
-    else
-        zle push-input
-        zle clear-screen
-    fi
-}
-zle -N fancy-ctrl-z
-bindkey '^Z' fancy-ctrl-z
-
 # Unbind problematic defaults
 bindkey -rM viins '^X'  # Allow ^X prefix bindings
-bindkey -rM viins '^L'  # Disable clear-screen
-bindkey -rM vicmd '^L'
 
 
 # ==============================================================================
@@ -326,17 +297,9 @@ alias grep='grep --color=auto'
 # ==============================================================================
 
 # --- fzf (fuzzy finder) ---
-# Provides: Ctrl+T (files), Ctrl+R (history), Alt+C (cd)
+# Provides: Ctrl+T (files), Alt+C (cd). Ctrl+R overridden by atuin.
 if (( $+commands[fzf] )); then
-    if fzf --zsh &>/dev/null; then
-        source <(fzf --zsh)
-    elif [[ -f ~/.fzf.zsh ]]; then
-        source ~/.fzf.zsh
-    elif [[ -f /usr/share/fzf/key-bindings.zsh ]]; then
-        source /usr/share/fzf/key-bindings.zsh
-        source /usr/share/fzf/completion.zsh
-    fi
-    # Catppuccin Mocha theme
+    source <(fzf --zsh)
     export FZF_DEFAULT_OPTS=" \
         --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 \
         --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
