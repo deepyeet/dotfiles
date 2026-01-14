@@ -197,8 +197,14 @@ TRAPWINCH() { zle && zle -R }
 # Autosuggestions: Ctrl+Space to accept
 bindkey '^ ' autosuggest-accept
 
-# Unbind problematic defaults
-bindkey -rM viins '^X'  # Allow ^X prefix bindings
+# Unbind ^X so it can be used as a prefix
+bindkey -rM viins '^X'
+
+# Edit command line in $EDITOR
+autoload -Uz edit-command-line
+zle -N edit-command-line
+bindkey -M vicmd 'v' edit-command-line      # v in command mode (vi tradition)
+bindkey -M viins '^X^E' edit-command-line   # Ctrl+X Ctrl+E in insert mode (bash tradition)
 
 
 # ==============================================================================
