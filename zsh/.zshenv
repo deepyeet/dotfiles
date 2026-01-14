@@ -20,3 +20,8 @@ appendpath() {
 
 # SSH agent socket (systemd user service)
 [[ -z "$SSH_AUTH_SOCK" ]] && export SSH_AUTH_SOCK="${XDG_RUNTIME_DIR}/ssh-agent.socket"
+
+# ==============================================================================
+# Machine-specific config that shouldn't be in version control.
+# ==============================================================================
+[[ -f "${HOME}/.zshlocalenv" ]] && source "${HOME}/.zshlocalenv"
