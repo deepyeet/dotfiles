@@ -414,9 +414,12 @@ fi
 # Must load AFTER fzf to override Ctrl+R binding
 (( $+commands[atuin] )) && eval "$(atuin init zsh)"
 
-# --- starship (prompt) ---
-# Cross-shell prompt with git status, language versions, etc.
-(( $+commands[starship] )) && eval "$(starship init zsh)"
+# --- Prompt ---
+# Clean prompt with useful info:
+#   - hostname (for SSH awareness)
+#   - directory
+#   - red % if last command failed
+PROMPT='%F{green}%m%f:%F{blue}%~%f %(?.%#.%F{red}%#%f) '
 
 
 # ==============================================================================
