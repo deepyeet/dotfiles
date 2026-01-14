@@ -221,6 +221,13 @@ bindkey -M viins '^X^E' edit-command-line   # Ctrl+X Ctrl+E in insert mode (bash
 # 6. ALIASES
 # ==============================================================================
 
+# --- Directory Navigation ---
+# A common practice for faster navigation.
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+alias .....='cd ../../../..'
+
 # --- Git ---
 alias gs='git status'
 alias glog='git log'
@@ -258,14 +265,16 @@ hup() { hg pull && hg rebase -d master }
 # --- Modern CLI tools (with fallbacks) ---
 if (( $+commands[eza] )); then
     alias ls='eza --icons --group-directories-first'
-    alias la='eza -a --icons'
-    alias ll='eza -la --icons --git'
+    alias l='eza -l --icons --git --group-directories-first'
+    alias la='eza -a --icons --group-directories-first'
+    alias ll='eza -la --icons --git --group-directories-first'
     alias tree='eza --tree --icons'
 else
     case "$OSTYPE" in
         darwin*) alias ls='ls -G' ;;
         *)       alias ls='ls --color=auto' ;;
     esac
+    alias l='ls -lh'
     alias la='ls -A'
     alias ll='ls -lAh'
 fi

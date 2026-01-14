@@ -1,145 +1,116 @@
-# Gemini Project Context: Dotfiles
+# CLAUDE.md
 
-This directory contains personal configuration files (dotfiles) for various development tools. The primary purpose is to maintain a consistent and personalized development environment across different machines.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Directory Overview
+## Overview
 
-This is a non-code project, consisting of configuration files for shell, editor, and terminal multiplexer. The structure is organized by tool:
+Personal dotfiles repository for zsh, neovim, tmux, and atuin configurations. Uses GNU Stow for symlink management.
 
--   `zsh/`: Contains the configuration for the Zsh shell.
--   `nvim/`: Holds the configuration for the Neovim editor.
--   `tmux/`: Includes the configuration for the Tmux terminal multiplexer.
+## Installation
 
-## Key Files
+```bash
+# Install all dotfiles (creates symlinks in home directory)
+stow zsh nvim tmux atuin
 
-### Zsh
+# Remove symlinks
+stow -D zsh nvim tmux atuin
 
--   `zsh/.zshenv`: Sourced on all invocations of Zsh. It's used to set environment variables that should be available in all shell sessions, including non-interactive ones.
--   `zsh/.zshrc`: This is the main configuration file for interactive Zsh sessions. It handles theme, plugins, aliases, and other interactive settings.
--   `zsh/.zsh/lib/`: Contains various scripts that are sourced by `.zshrc` to configure different aspects of the shell, like completion, keybindings, and plugins.
--   `zsh/.zsh/plugins/`: Contains plugins for Zsh, managed by a custom script in `.zshrc`.
-
-### Neovim
-
-The Neovim configuration has been significantly refactored to improve structure, maintainability, and robustness. It is now based on a modern, Lua-centric setup using the `lazy.nvim` plugin manager.
-
-#### Neovim Architecture & File Structure
-
-**The Principle:** Do not configure all plugins in a single file. Use the `lazy.nvim` directory import feature to isolate subsystems.
-
-**File Structure Standards:**
-* **Root:** `init.lua` is strictly for bootstrapping `lazy.nvim` and loading core configs.
-* **Config:** `lua/config/` holds pure Lua settings (no plugin code).
-    * `options.lua`: Globals (`vim.opt`, `vim.g.mapleader`).
-    * `keymaps.lua`: Vanilla keybindings (`vim.keymap.set`).
-    * **Rule:** These must be required in `init.lua` *before* `lazy.setup`.
-* **Plugins:** `lua/plugins/` holds the specs. Each file returns a Lua table or a list of tables.
-    * `ui.lua`: Visuals (Colorscheme, Dashboard, Icons).
-    * `editor.lua`: Text manipulation (Flash, Substitute, Mini.ai, Gitsigns).
-    * `treesitter.lua`: Syntax highlighting and parsing.
-    * `lsp.lua`: Language servers and completion (to be implemented).
-    * `telescope.lua`: Fuzzy finding.
-
-**Bootstrapping Sequence (init.lua):**
-1.  Check/Clone `lazy.nvim`.
-2.  Prepend `lazy.nvim` to runtime path.
-3.  **Load `config.options`** (Critical: Must set mapleader here).
-4.  **Load `config.keymaps`**.
-5.  **Run `lazy.setup("plugins")`** (Scans the `lua/plugins` directory).
-6.  Load local overrides (`pcall(require, 'local')`).
-
-**Anti-Patterns Removed:**
-* `source ~/.vimrc`: Legacy Vimscript sourcing is banned. Native Lua `vim.opt` is required.
-* `lua/plugins.lua`: The monolithic plugin file is banned.
-
-#### Plugin Management & Lazy Loading Strategies
-
-**Lazy Loading & Event Lifecycle**
-**The "Restaurant Analogy" for Startup:**
-*   **`lazy = false` (The Kitchen):** Critical plugins that *must* load before UI.
-    *   *Use Case:* Colorschemes (`catppuccin`), Icon Mocks (`mini.icons`).
-    *   *Risk:* Slows down startup directly.
-*   **`event = "VeryLazy"` (The Waiters):** Loads after the UI has drawn but before user interaction.
-    *   *Use Case:* Helper tools, Keybinding managers (`which-key`), Global UI tweaks.
-*   **`event = { "BufReadPost", "BufNewFile" }` (The Sommelier):** Loads only when a real file buffer is opened.
-    *   *Use Case:* Syntax highlighting (`treesitter`), Git signs (`gitsigns`), LSP.
-*   **`keys = { ... }` (On-Demand):** The plugin remains "frozen" until a specific key is pressed.
-    *   *Use Case:* Fuzzy finders (`telescope`), Motions (`flash`).
-
-**Configuration Semantics (`opts` vs `config`)**
-*   **The `opts` Rule:** Always prefer `opts = { ... }` over `config = function ...`.
-    *   `lazy.nvim` automatically runs `require("plugin").setup(opts)` if `opts` is present.
-*   **The Silent Failure Trap:** If a plugin requires `setup()` to run (like `mini.files`), but you provide neither `config` nor `opts`, it will **never load**.
-    *   *Fix:* explicit `opts = {}` acts as a trigger to force initialization with defaults.
-*   **Performance Hack:** For expensive modules (like `telescope.builtin`), avoid requiring them at the top level. Put the `require` call *inside* the keymap function to defer parsing until execution.
-
-**Dependency Management**
-*   **Explicit Dependencies:** Use the `dependencies` key to ensure load order (e.g., `telescope` needs `plenary`).
-*   **The "Ghost State" Risk:** Some plugins (like `nvim-treesitter-textobjects`) have race conditions with their parents.
-    *   *Strategy:* If a dependency causes race-condition crashes, replace it with a decoupled alternative (e.g., switching from `nvim-treesitter-textobjects` to `mini.ai`).
-
-#### Treesitter & Telescope Optimization
-
-### Treesitter Optimization
-**The Problem:** Compiling parsers for 30+ languages freezes the editor during updates.
-**The Fix:**
-1.  **Minimal `ensure_installed`:** Only hard-code the "Meta" languages required for the editor itself: `c`, `lua`, `vim`, `vimdoc`, `query` (for treesitter queries), `markdown`, `markdown_inline`.
-2.  **Enable `auto_install = true`:** Let the editor download parsers *Just-In-Time* when you open a file of that type (e.g., Python, Rust).
-3.  **Event Mapping:** Always use `event = { "BufReadPost", "BufNewFile" }`. Never load treesitter on startup (it's useless on an empty dashboard).
-
-### Telescope Optimization
-(duplicate?)
-**The Problem:** `require("telescope.builtin")` parses dozens of Lua files, causing a massive startup spike if loaded early.
-**The Fix (The "Keys Function" Pattern):**
-Instead of defining keys as a static table, use a function to defer the `require` call:
-```lua
-keys = function()
-  -- The require happens ONLY when the user asks for the keys, not at boot.
-  local builtin = require('telescope.builtin')
-  return {
-    { "<leader>ff", builtin.find_files, desc = "Find Files" },
-    -- ...
-  }
-end
+# Install specific tool
+stow nvim
 ```
-Native Sorters: Always compile `telescope-fzf-native.nvim` (via `cmake`). It replaces the slow Lua sorter with a C implementation, making fuzzy finding instant on large codebases.
 
-#### Modern Plugin Replacements & Essential Editor Features
+## Structure
 
-### Modern Plugin Replacements
-**Text Objects:**
-*   **Legacy:** `nvim-treesitter-textobjects` (Prone to race conditions/crashes, depends on parser health).
-*   **Modern:** `mini.ai` (Hybrid regex/treesitter approach, zero-crash guarantee, vastly more objects like generic "indent" or "argument" scopes).
+- `atuin/` - Atuin shell history configuration
+- `nvim/` - Neovim configuration (Lua-based, lazy.nvim plugin manager)
+- `tmux/` - Tmux configuration (tpm plugin manager)
+- `zsh/` - Zsh configuration (zinit plugin manager)
 
-**Auto-Closing / Pairs:**
-*   **Legacy:** `nvim-autopairs` (Good, but complex).
-*   **Modern:** `mini.pairs` (Minimal, "just works" defaults).
+## Zsh Architecture
 
-**Surround:**
-*   **Legacy:** `vim-surround` (Vimscript, old).
-*   **Modern:** `mini.surround` (Lua, unified keybind logic).
+**Two-file config:**
+- `.zshenv` - Environment variables (EDITOR, PAGER, PATH) - sourced for all zsh
+- `.zshrc` - Interactive shell config (plugins, aliases, keybindings)
 
-**Icons:**
-*   **Legacy:** `nvim-web-devicons`.
-*   **Modern:** `mini.icons` (Can "mock" devicons to support legacy plugins while providing better performance and API).
+**Data locations (XDG-compliant):**
+- `~/.local/share/zinit/` - Zinit and plugins
+- `~/.cache/zsh/` - Cache (zcompdump, completion cache)
 
-### Essential Editor Features (Checklist)
-Every configuration must include these three "invisible" features to be viable for coding:
+**Plugin load order (critical):**
+1. zsh-completions (adds to fpath)
+2. compinit (initializes completion)
+3. fzf-tab (hooks into completion, replaces native menu)
+4. autosuggestions (wraps widgets)
+5. fast-syntax-highlighting (must be last, wraps all widgets)
 
-*   **Gutter Indicators:** `gitsigns.nvim` (Must use `BufRead` event).
-*   **Auto-Closing:** `mini.pairs` (Must use `InsertEnter` event).
-*   **Indentation Guides:** `mini.indentscope` or `ibl` (Optional but recommended for readability).
+**Key tools:**
+- zinit - plugin manager with turbo mode (deferred loading)
+- atuin - shell history (Ctrl+R, Ctrl+P, up arrow)
+- fzf - fuzzy finder (Ctrl+T files, Alt+C cd)
+- zoxide - smart cd (`z` jump, `zi` interactive picker)
 
-### Tmux
+**Key bindings:**
+- Vi mode with cursor shape feedback (block=normal, beam=insert)
+- `Ctrl+Space` - accept autosuggestion
+- `Ctrl+X Ctrl+E` - edit command in $EDITOR (bash tradition)
+- `Escape` then `v` - edit command in $EDITOR (vi tradition)
+- `Ctrl+P` - atuin history search (like up arrow)
 
--   `tmux/.tmux.conf`: The configuration file for Tmux. It defines keybindings, sets options, and manages plugins using `tpm` (Tmux Plugin Manager).
+**Prompt:** Simple native zsh - `hostname:directory %` (red `%` on error)
 
-## Usage
+## Atuin
 
-These dotfiles are managed using `stow`. To install them, you would typically run `stow *` from within this directory. This will create symlinks for the configuration files in your home directory. To remove the symlinks, you can run `stow -D *`.
+Shell history manager. Config at `atuin/.config/atuin/config.toml`.
 
-The Zsh configuration also contains logic to automatically clone and load plugins. The Neovim configuration uses `lazy.nvim` to manage plugins, and the Tmux configuration uses `tpm`.
+**Key settings:**
+- `enter_accept = false` - Enter accepts to command line (like fzf-tab), press Enter again to execute
+- `keymap_mode = "vim-insert"` - Vim keybindings in search
+- `filter_mode = "host"` - Filter to current host by default
 
-## Maintaining GEMINI.md
+## Neovim Architecture
 
-As you work on the code, you must always update GEMINI.md after every task. Ensure that the file is both detailed and up to date.
+**Bootstrapping sequence (init.lua):**
+1. Bootstrap lazy.nvim
+2. Load `config.options` (sets mapleader)
+3. Load `config.keymaps`
+4. Run `lazy.setup("plugins")`
+5. Optional local overrides via `pcall(require, 'local')`
+
+**Plugin organization (`lua/plugins/`):**
+- `ui.lua` - Colorscheme (Catppuccin), which-key, mini.icons
+- `editor.lua` - Flash (navigation), mini.surround, mini.ai, mini.files, mini.bracketed, Spectre
+- `treesitter.lua` - Syntax highlighting and textobjects
+- `lsp.lua` - Language servers (nvim-lspconfig) and completion (blink.cmp)
+- `telescope.lua` - Fuzzy finding with fzf-native, ui-select, zoxide extensions
+
+**Key conventions:**
+- Prefer `opts = {}` over `config = function` for plugin setup
+- Use lazy loading events: `BufReadPost`/`BufNewFile` for file plugins, `VeryLazy` for helpers
+- For expensive modules like telescope.builtin, defer `require` inside keymap functions
+
+## Tmux
+
+**Prefix:** `C-\` (Ctrl+Backslash)
+
+**Key bindings (Alt-based, no prefix needed):**
+- `M-h/j/k/l` - Pane navigation
+- `M-t` - New window
+- `M-d/D` - Split horizontal/vertical
+- `M-n/p` - Next/previous window
+- `M-P/N` - Move window left/right
+- `M-1-9` - Select window by number
+- `M-s` - Choose session
+- `M-c` - Copy mode
+- `M-z` - Toggle pane zoom
+- `M-x` - Kill pane (with confirmation)
+- `prefix + Space` - tmux-thumbs (quick copy with hints)
+- `prefix + r` - Reload config
+
+**Plugins (managed by tpm):**
+- catppuccin - colorscheme (mocha flavor)
+- tmux-thumbs - quick copy with hints (less buggy than tmux-fingers)
+
+**Settings inlined from tmux-sensible:**
+- `escape-time 0` - Faster escape for vim
+- `history-limit 50000` - Bigger scrollback
+- `focus-events on` - Vim focus detection
