@@ -46,14 +46,12 @@ unsetopt bg_nice          # Don't nice background jobs (WSL fix)
 setopt correct            # Suggest corrections for typos
 setopt autocd             # Type directory name to cd into it
 
-# History: Atuin handles interactive search (Ctrl+R).
-# We keep minimal zsh history for:
-#   - history-substring-search plugin (up/down arrow)
-#   - Fallback if atuin is unavailable
+# History: Atuin handles search (Ctrl+R) and up/down arrows.
+# Minimal zsh history as fallback if atuin unavailable.
 setopt hist_ignore_space  # Ignore commands starting with space
 setopt inc_append_history # Append immediately, not on exit
 setopt share_history      # Share history between terminals
-HISTSIZE=10000            # In-memory history (for substring search)
+HISTSIZE=10000            # In-memory history
 SAVEHIST=0                # Don't write to disk (atuin handles persistence)
 
 
@@ -150,10 +148,6 @@ zinit light Aloxaf/fzf-tab
 zinit ice wait'0b' lucid
 zinit light zsh-users/zsh-autosuggestions
 
-# History substring search: up/down arrows search history
-zinit ice wait'0b' lucid
-zinit light zsh-users/zsh-history-substring-search
-
 # Syntax highlighting: colorizes commands as you type
 # Must be LAST because it wraps all other widgets
 zinit ice wait'0c' lucid
@@ -208,16 +202,6 @@ bindkey -M menuselect 'h' vi-backward-char
 bindkey -M menuselect 'j' vi-down-line-or-history
 bindkey -M menuselect 'k' vi-up-line-or-history
 bindkey -M menuselect 'l' vi-forward-char
-
-# History substring search bindings
-bindkey '^[[A' history-substring-search-up    # Up arrow
-bindkey '^[[B' history-substring-search-down  # Down arrow
-[[ -n "$terminfo[kcuu1]" ]] && bindkey "$terminfo[kcuu1]" history-substring-search-up
-[[ -n "$terminfo[kcud1]" ]] && bindkey "$terminfo[kcud1]" history-substring-search-down
-bindkey -M viins '^P' history-substring-search-up
-bindkey -M viins '^N' history-substring-search-down
-bindkey -M vicmd 'k' history-substring-search-up
-bindkey -M vicmd 'j' history-substring-search-down
 
 # Autosuggestions: Ctrl+Space to accept
 bindkey '^ ' autosuggest-accept
