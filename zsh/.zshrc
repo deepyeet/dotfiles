@@ -288,7 +288,43 @@ alias grep='grep --color=auto'
 # --- fzf (fuzzy finder) ---
 # Provides: Ctrl+T (files), Alt+C (cd). Ctrl+R overridden by atuin.
 if (( $+commands[fzf] )); then
-    source <(fzf --zsh)
+    # Secure, robust shim for modern vs. legacy fzf.
+    if fzf --zsh >/dev/null 2>&1; then
+        # Modern fzf: fast, robust, and preferred.
+        source <(fzf --zsh)
+    else
+        # Legacy fzf: Check a curated list of trusted, root-owned, non-writable system paths.
+        local -a trusted_paths=(
+            "/usr/share/fzf"                    # Common on Arch, Fedora
+            "/usr/share/doc/fzf/examples"       # Common on Debian, Ubuntu
+        )
+        local legacy_dir=""
+
+        for dir in "${trusted_paths[@]}"; do
+            if [[ -d "$dir" ]]; then
+                # SECURITY: Verify dir is owned by root and is not world-writable.
+                local owner=$(stat -c "%U" "$dir" 2>/dev/null)
+                local perms=$(stat -c "%a" "$dir" 2>/dev/null)
+                # Check ownership and ensure the 'write' bit for 'others' is not set.
+                if [[ "$owner" == "root" ]] && (( (8#$perms & 2) == 0 )); then
+                    if [[ -f "$dir/key-bindings.zsh" ]]; then
+                        legacy_dir=$dir
+                        break # Found a trusted path, stop searching.
+                    fi
+                fi
+            fi
+        done
+
+        if [[ -n "$legacy_dir" ]]; then
+            # Source scripts from the trusted, root-owned directory.
+            local bindings="$legacy_dir/key-bindings.zsh"
+            local completion="$legacy_dir/completion.zsh"
+
+            [[ -f "$bindings" ]] && source "$bindings"
+            [[ -f "$completion" ]] && source "$completion"
+        fi
+    fi
+
     export FZF_DEFAULT_OPTS=" \
         --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 \
         --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
