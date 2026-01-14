@@ -1,0 +1,26 @@
+# ==============================================================================
+# ATUIN CONFIGURATION
+# ==============================================================================
+# Managed with GNU Stow: run `stow atuin` from dotfiles directory.
+# Full options: https://docs.atuin.sh/configuration/config/
+# ==============================================================================
+
+# Search mode: fuzzy matching like fzf
+search_mode = "fuzzy"
+
+# Enter accepts into command line (like fzf-tab), doesn't execute immediately
+# Press Enter again to execute, or edit the command first
+enter_accept = false
+
+# Use vim keybindings in atuin search
+keymap_mode = "vim-insert"
+
+# Style: compact uses less screen space
+style = "compact"
+
+# Filter to current host by default (more relevant results)
+filter_mode = "host"
+
+# Sync settings (if using atuin sync)
+[sync]
+records = true
