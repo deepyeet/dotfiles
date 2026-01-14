@@ -175,6 +175,7 @@ zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 # $realpath is provided by fzf-tab - the resolved path of the completion candidate
 zstyle ':fzf-tab:*' fzf-bindings 'tab:accept'
 zstyle ':fzf-tab:*' fzf-command ftb-tmux-popup
+zstyle ':fzf-tab:*' popup-min-size 80 20
 zstyle ':fzf-tab:complete:*' fzf-preview 'eza -1 --color=always --icons $realpath 2>/dev/null || cat $realpath 2>/dev/null'
 
 
