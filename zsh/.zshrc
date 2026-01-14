@@ -267,7 +267,6 @@ hup() { hg pull && hg rebase -d master }
 # --- Modern CLI tools (with fallbacks) ---
 if (( $+commands[eza] )); then
     alias ls='eza --icons --group-directories-first'
-    alias l='eza --icons'
     alias la='eza -a --icons'
     alias ll='eza -la --icons --git'
     alias tree='eza --tree --icons'
@@ -276,7 +275,6 @@ else
         darwin*) alias ls='ls -G' ;;
         *)       alias ls='ls --color=auto' ;;
     esac
-    alias l='ls'
     alias la='ls -A'
     alias ll='ls -lAh'
 fi
@@ -307,21 +305,8 @@ if (( $+commands[fzf] )); then
 fi
 
 # --- zoxide (smart cd) ---
-# Provides: z (jump), zi (interactive), Ctrl+G (fzf picker)
-if (( $+commands[zoxide] )); then
-    eval "$(zoxide init zsh)"
-    # Ctrl+G: interactive directory picker
-    function _zoxide-widget() {
-        local result="$(zoxide query -i)"
-        if [[ -n "$result" ]]; then
-            BUFFER="cd ${(q)result}"
-            zle accept-line
-        fi
-        zle reset-prompt
-    }
-    zle -N _zoxide-widget
-    bindkey '^g' _zoxide-widget
-fi
+# Provides: z (jump), zi (interactive)
+(( $+commands[zoxide] )) && eval "$(zoxide init zsh)"
 
 # --- atuin (better history) ---
 # Provides: Ctrl+R (replaces fzf history search)
