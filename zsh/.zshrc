@@ -4,13 +4,18 @@
 # A single-file zsh configuration using zinit for plugin management.
 # Managed with GNU Stow: run `stow zsh` from dotfiles directory.
 #
-# Structure:
+# DATA LOCATIONS (XDG-compliant):
+#   ~/.local/share/zinit/  - Zinit plugin manager and all plugins
+#   ~/.local/share/zsh/    - Persistent data (cdr recent directories)
+#   ~/.cache/zsh/          - Cache (completions dump and cache)
+#
+# STRUCTURE:
 #   1. Environment       - EDITOR, PAGER, colors
 #   2. Shell Options     - Core zsh behavior settings
 #   3. Zinit + Plugins   - Plugin manager with proper load ordering
 #   4. Completions       - Tab completion settings (after compinit)
 #   5. Keybindings       - Vi mode, navigation, custom bindings
-#   6. History           - History settings (atuin handles Ctrl+R)
+#   6. Recent Dirs       - Built-in cdr for quick directory access
 #   7. Aliases           - Git, Mercurial, modern CLI tools
 #   8. Tool Integrations - fzf, zoxide, atuin, starship
 #   9. Local Overrides   - Machine-specific config (~/.zshlocalrc)
@@ -44,38 +49,78 @@ fi
 # 2. SHELL OPTIONS
 # ==============================================================================
 
+# XDG directories for zsh data
+ZSH_DATA_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/zsh"
+ZSH_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/zsh"
+mkdir -p "$ZSH_DATA_DIR" "$ZSH_CACHE_DIR"
+
 skip_global_compinit=1    # Skip Debian's premature compinit
 unsetopt flow_control     # Disable Ctrl+S/Q (terminal freeze)
 unsetopt bg_nice          # Don't nice background jobs (WSL fix)
 setopt correct            # Suggest corrections for typos
 setopt autocd             # Type directory name to cd into it
 
-# History: minimal settings (atuin handles interactive search)
-HISTFILE="${HOME}/.zsh_history"
-HISTSIZE=100000
-SAVEHIST=100000
+# History: Atuin handles interactive search (Ctrl+R).
+# We keep minimal zsh history for:
+#   - history-substring-search plugin (up/down arrow)
+#   - Fallback if atuin is unavailable
 setopt hist_ignore_space  # Ignore commands starting with space
 setopt inc_append_history # Append immediately, not on exit
 setopt share_history      # Share history between terminals
+HISTSIZE=10000            # In-memory history (for substring search)
+SAVEHIST=0                # Don't write to disk (atuin handles persistence)
 
 
 # ==============================================================================
 # 3. ZINIT PLUGIN MANAGER
 # ==============================================================================
-# Zinit handles plugin loading with proper compinit integration.
+# Zinit is a flexible zsh plugin manager with proper compinit integration.
 # Repository: https://github.com/zdharma-continuum/zinit
 #
-# Commands:
-#   zinit update        - Update all plugins
-#   zinit self-update   - Update zinit itself
-#   zinit times         - Show plugin load times
-#   zinit delete --all  - Clean reinstall
+# ZINIT SYNTAX REFERENCE:
+# ─────────────────────────────────────────────────────────────────────────────
+# zinit light <plugin>     Load plugin (fast, no tracking)
+# zinit load <plugin>      Load plugin (with reporting/tracking)
+# zinit ice <modifiers>    Set options for NEXT zinit command only ("ice" melts)
+#
+# COMMON ICE MODIFIERS:
+# ─────────────────────────────────────────────────────────────────────────────
+# wait'N'      Defer loading until N tenths of second after prompt
+#              wait'0' = after first prompt, wait'1' = 0.1s after, etc.
+#              wait'0a' wait'0b' = priority ordering (a loads before b)
+#
+# lucid        Suppress "Loaded <plugin>" messages
+#
+# blockf       Block plugin from modifying fpath (we handle it ourselves)
+#
+# atload'cmd'  Run command after loading plugin
+#
+# as'program'  Treat as external program, not zsh plugin
+#
+# from'gh-r'   Download from GitHub Releases (binary releases)
+#
+# COMMANDS:
+# ─────────────────────────────────────────────────────────────────────────────
+# zinit update           Update all plugins
+# zinit self-update      Update zinit itself
+# zinit times            Show plugin load times (for debugging)
+# zinit report <plugin>  Show what a plugin did (functions, aliases, etc.)
+# zinit delete --all     Remove all plugins (clean reinstall)
+# zinit zstatus          Show zinit status
 #
 # LOAD ORDER (critical for correctness):
-#   1. Completions plugin (adds to fpath)
-#   2. compinit (zinit runs this automatically before wait'' plugins)
-#   3. fzf-tab (hooks into completion, must be after compinit)
-#   4. Widget wrappers (autosuggestions, syntax-highlighting - must be last)
+# ─────────────────────────────────────────────────────────────────────────────
+#   1. zsh-completions   - Adds completion definitions to fpath
+#   2. compinit          - Initializes completion system (reads fpath)
+#   3. fzf-tab           - Replaces completion menu (must be after compinit)
+#   4. autosuggestions   - Wraps ZLE widgets (must be after compinit)
+#   5. syntax-highlight  - Wraps ZLE widgets (must be last)
+#
+# WHY THIS ORDER MATTERS:
+#   - compinit reads fpath, so completions must be added before it runs
+#   - fzf-tab hooks into the completion system compinit creates
+#   - autosuggestions/syntax-highlighting wrap ZLE widgets, so they must
+#     load after any plugin that creates widgets they need to wrap
 # ==============================================================================
 
 ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
@@ -89,34 +134,43 @@ fi
 source "${ZINIT_HOME}/zinit.zsh"
 
 # --- Phase 1: Completions (before compinit) ---
-# blockf: prevent zinit from modifying fpath (we want it added properly)
+# blockf prevents the plugin from adding to fpath itself (zinit handles it)
 zinit ice blockf
 zinit light zsh-users/zsh-completions
 
 # --- Phase 2: compinit ---
-# zinit automatically runs compinit before loading wait'' plugins
+# Compile completions to ~/.cache/zsh/zcompdump for faster loading
+# Only regenerate the dump file once per day
 autoload -Uz compinit
-# Regenerate dump only once per day for fast startup
-if [[ -n ${HOME}/.zcompdump(#qN.mh+24) ]]; then
-    compinit
+_zcompdump="$ZSH_CACHE_DIR/zcompdump"
+if [[ -n ${_zcompdump}(#qN.mh+24) ]]; then
+    compinit -d "$_zcompdump"
 else
-    compinit -C  # Skip security check (faster)
+    compinit -C -d "$_zcompdump"  # -C skips security check (faster)
 fi
+unset _zcompdump
 
 # --- Phase 3: fzf-tab (after compinit) ---
-# wait'0a': load immediately after prompt, 'a' = high priority
+# Replaces zsh's completion menu with fzf. Must load after compinit.
+# wait'0a': load after first prompt, 'a' = highest priority among wait'0'
 zinit ice wait'0a' lucid
 zinit light Aloxaf/fzf-tab
 
 # --- Phase 4: Widget wrappers (must be last) ---
-# These wrap ZLE widgets, so must load after everything else
+# These plugins wrap ZLE widgets, so they must load after everything else
+# that creates or modifies widgets.
+
+# Autosuggestions: shows grayed-out suggestion as you type
 zinit ice wait'0b' lucid
 zinit light zsh-users/zsh-autosuggestions
 
+# History substring search: up/down arrows search history
 zinit ice wait'0b' lucid
 zinit light zsh-users/zsh-history-substring-search
 
-zinit ice wait'0c' lucid  # 'c' = after autosuggestions
+# Syntax highlighting: colorizes commands as you type
+# Must be LAST because it wraps all other widgets
+zinit ice wait'0c' lucid
 zinit light zdharma-continuum/fast-syntax-highlighting
 
 
@@ -149,8 +203,7 @@ zstyle ':completion:*:descriptions' format '%F{white}%B%d%b%f'
 
 # Cache completions for faster repeated use
 zstyle ':completion::complete:*' use-cache yes
-zstyle ':completion::complete:*' cache-path "${HOME}/.zsh_cache"
-mkdir -p "${HOME}/.zsh_cache"
+zstyle ':completion::complete:*' cache-path "$ZSH_CACHE_DIR/compcache"
 
 # Ignore system users in completion
 zstyle ':completion:*:*:*:users' ignored-patterns \
@@ -232,12 +285,12 @@ bindkey -rM vicmd '^L'
 # ==============================================================================
 # Built-in zsh recent directory tracking.
 # `d` lists recent dirs, `1`-`9` jumps to them.
+# Data stored in ~/.local/share/zsh/cdr-recent-dirs
 # ==============================================================================
 
 autoload -Uz chpwd_recent_dirs cdr add-zsh-hook
 add-zsh-hook chpwd chpwd_recent_dirs
-mkdir -p "${HOME}/.zsh_cdr"
-zstyle ':chpwd:*' recent-dirs-file "${HOME}/.zsh_cdr/recent-dirs"
+zstyle ':chpwd:*' recent-dirs-file "$ZSH_DATA_DIR/cdr-recent-dirs"
 zstyle ':chpwd:*' recent-dirs-max 1000
 zstyle ':chpwd:*' recent-dirs-default yes
 
