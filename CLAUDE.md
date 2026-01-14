@@ -10,10 +10,10 @@ Personal dotfiles repository for zsh, neovim, and tmux configurations. Uses GNU 
 
 ```bash
 # Install all dotfiles (creates symlinks in home directory)
-stow *
+stow zsh nvim tmux
 
 # Remove symlinks
-stow -D *
+stow -D zsh nvim tmux
 
 # Install specific tool
 stow nvim
@@ -21,9 +21,34 @@ stow nvim
 
 ## Structure
 
-- `nvim/` - Neovim configuration (Lua-based, lazy.nvim)
+- `nvim/` - Neovim configuration (Lua-based, lazy.nvim plugin manager)
 - `tmux/` - Tmux configuration (tpm plugin manager)
-- `zsh/` - Zsh configuration (custom plugin system)
+- `zsh/` - Zsh configuration (zinit plugin manager, single-file)
+
+## Zsh Architecture
+
+**Single-file config (`zsh/.zshrc`)** with zinit plugin manager.
+
+**Data locations (XDG-compliant):**
+- `~/.local/share/zinit/` - Zinit and plugins
+- `~/.local/share/zsh/` - Persistent data (cdr recent dirs)
+- `~/.cache/zsh/` - Cache (zcompdump, completion cache)
+
+**Plugin load order (critical):**
+1. zsh-completions (adds to fpath)
+2. compinit (initializes completion)
+3. fzf-tab (hooks into completion)
+4. autosuggestions, history-substring-search (wrap widgets)
+5. fast-syntax-highlighting (must be last, wraps all widgets)
+
+**Key tools:**
+- zinit - plugin manager with proper compinit integration
+- atuin - handles all history (Ctrl+R search, persistence, cross-terminal sync)
+- fzf - fuzzy finder (Ctrl+T files, Alt+C cd)
+- zoxide - smart cd (z command, Ctrl+G picker)
+- Native prompt - hostname:directory with exit status indicator
+
+**No starship** - uses simple native zsh prompt for speed.
 
 ## Neovim Architecture
 
@@ -35,29 +60,16 @@ stow nvim
 5. Optional local overrides via `pcall(require, 'local')`
 
 **Plugin organization (`lua/plugins/`):**
-- `ui.lua` - Colorscheme (Catppuccin), dashboard, icons
-- `editor.lua` - Text manipulation (Flash, Substitute, Mini.ai, Gitsigns)
-- `treesitter.lua` - Syntax highlighting
-- `lsp.lua` - Language servers and completion
-- `telescope.lua` - Fuzzy finding
+- `ui.lua` - Colorscheme (Catppuccin), which-key, mini.icons
+- `editor.lua` - Flash (navigation), mini.surround, mini.ai, mini.files, mini.bracketed, Spectre
+- `treesitter.lua` - Syntax highlighting and textobjects
+- `lsp.lua` - Language servers (nvim-lspconfig) and completion (blink.cmp)
+- `telescope.lua` - Fuzzy finding with fzf-native, ui-select, zoxide extensions
 
 **Key conventions:**
-- Always prefer `opts = {}` over `config = function` for plugin setup
-- Use lazy loading events: `BufReadPost`/`BufNewFile` for file-dependent plugins, `VeryLazy` for helpers
+- Prefer `opts = {}` over `config = function` for plugin setup
+- Use lazy loading events: `BufReadPost`/`BufNewFile` for file plugins, `VeryLazy` for helpers
 - For expensive modules like telescope.builtin, defer `require` inside keymap functions
-- Modern plugin choices: mini.ai (text objects), mini.pairs (auto-close), mini.surround, mini.icons
-
-## Zsh Architecture
-
-**Loading order:**
-1. Plugins loaded via `load_plugin` function (auto-clones from git)
-2. Local overrides via `~/.zshlocalrc`
-3. Prompt setup
-4. Completion (compinit)
-5. Core settings (keybinds, history, correction)
-6. Optional tool configs (`lib/opt/`)
-
-**Key plugins:** zsh-syntax-highlighting, zsh-completions, zsh-history-substring-search, z, fzf-z, zsh-autosuggestions, starship prompt
 
 ## Tmux
 
@@ -71,5 +83,13 @@ stow nvim
 - `M-1-9` - Select window by number
 - `M-s` - Choose session
 - `M-c` - Copy mode
+- `M-y` - tmux-fingers (quick copy)
+- `M-/` - fuzzback (fuzzy search scrollback)
 
-**Plugins:** catppuccin theme, tmux-resurrect (session persistence), tmux-fingers, tmux-fuzzback
+**Plugins (managed by tpm):**
+- catppuccin - colorscheme
+- tmux-resurrect/continuum - session persistence
+- tmux-fingers - quick copy with hints
+- tmux-fuzzback - fuzzy search scrollback
+- tmux-pain-control - better pane bindings
+- tmux-sensible - sensible defaults
