@@ -48,3 +48,18 @@ end, { desc = "Tab cd to file dir" })
 vim.keymap.set('n', '<leader>tn', '<cmd>tabnew<cr>', { desc = "New tab" })
 vim.keymap.set('n', '<leader>tc', '<cmd>tabclose<cr>', { desc = "Close tab" })
 vim.keymap.set('n', '<leader>to', '<cmd>tabonly<cr>', { desc = "Close other tabs" })
+
+-- ==============================================================================
+-- Code Navigation
+-- ==============================================================================
+-- Document symbols: fuzzy find classes, functions, etc. in current file
+-- Filtered to structural symbols only (no variables/constants)
+vim.keymap.set('n', '<leader>o', function()
+  require('telescope.builtin').lsp_document_symbols({
+    symbols = { "Class", "Struct", "Function", "Method", "Interface", "Enum", "Module", "Namespace" }
+  })
+end, { desc = "Outline (document symbols)" })
+
+-- Alternate file: switch between header/source (C/C++ via clangd)
+-- Follows a.vim tradition (:A command)
+vim.keymap.set('n', '<leader>a', '<cmd>ClangdSwitchSourceHeader<cr>', { desc = "Alternate file (header/source)" })

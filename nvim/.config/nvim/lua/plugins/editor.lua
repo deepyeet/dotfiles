@@ -33,15 +33,16 @@ return {
   },
 
   -- Mini.surround: Add/delete/change surrounding pairs
-  -- ys{motion}{char} - Add surrounding (e.g., ysiw" → surround word with quotes)
-  -- ds{char}         - Delete surrounding (e.g., ds" → delete surrounding quotes)
-  -- cs{old}{new}     - Change surrounding (e.g., cs"' → change " to ')
+  -- <leader>s{motion}{char} - Add surrounding (e.g., <leader>siw" → surround word with quotes)
+  -- ds{char}                - Delete surrounding (e.g., ds" → delete surrounding quotes)
+  -- cs{old}{new}            - Change surrounding (e.g., cs"' → change " to ')
+  -- Note: Using <leader>s for add to avoid yank delay from ys mapping
   {
     'echasnovski/mini.surround',
     version = false,
     opts = {
       mappings = {
-        add = 'ys',
+        add = '<leader>s',
         delete = 'ds',
         replace = 'cs',
         find = '',           -- Disabled (conflicts with other plugins)
@@ -71,14 +72,10 @@ return {
   },
 
   -- Spectre: Project-wide search and replace
-  -- <leader>sr - Open Spectre panel
-  -- <leader>sw - Search current word
+  -- Use :Spectre to open, or Telescope commands to find it
   {
     "nvim-pack/nvim-spectre",
     dependencies = { "nvim-lua/plenary.nvim" },
-    keys = {
-      { "<leader>sr", function() require("spectre").open() end, desc = "Search/Replace in project" },
-      { "<leader>sw", function() require("spectre").open_visual({ select_word = true }) end, desc = "Search current word" },
-    },
+    cmd = { "Spectre" },  -- Lazy load on command
   },
 }

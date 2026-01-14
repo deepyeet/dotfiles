@@ -28,3 +28,7 @@ vim.opt.splitbelow = true      -- split opens below
 
 -- Live preview of :s substitutions in a split
 vim.opt.inccommand = "split"
+
+-- Use system clipboard for all yank/put operations
+-- Neovim 0.10+ handles OSC52 automatically when in SSH/tmux
+vim.opt.clipboard = "unnamedplus"

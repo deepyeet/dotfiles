@@ -3,7 +3,8 @@
 -- ==============================================================================
 
 -- Work machines can't run tree-sitter CLI, freeze to last version without it
-local ts_version = _G.is_work and "v0.9.2" or false
+-- v0.9.3 is the last version before tree-sitter CLI became required
+local ts_version = _G.is_work and "v0.9.3" or false
 
 return {
   -- Core treesitter (syntax highlighting and indentation)
@@ -20,6 +21,17 @@ return {
         "c", "cpp", "lua", "vim", "vimdoc", "query",
         "markdown", "markdown_inline", "python",
       },
+    },
+  },
+
+  -- Treesitter context: Sticky header showing current function/class
+  -- Shows the function/class you're in at the top of the window
+  {
+    "nvim-treesitter/nvim-treesitter-context",
+    event = { "BufReadPost", "BufNewFile" },
+    opts = {
+      max_lines = 3,           -- Max lines of context to show
+      multiline_threshold = 1, -- Max lines for a single context node
     },
   },
 
