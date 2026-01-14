@@ -116,6 +116,7 @@ if [[ ! -d "$ZINIT_HOME" ]]; then
     git clone https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
 fi
 source "${ZINIT_HOME}/zinit.zsh"
+unalias zi 2>/dev/null  # zinit defines zi=zinit; we want zoxide's zi
 
 # --- Phase 1: Completions (before compinit) ---
 # blockf prevents the plugin from adding to fpath itself (zinit handles it)
