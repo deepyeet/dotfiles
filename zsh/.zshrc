@@ -23,9 +23,7 @@
 # ==============================================================================
 # 1. ENVIRONMENT
 # ==============================================================================
-
-export EDITOR=nvim
-export PAGER=less
+# EDITOR and PAGER are set in .zshenv (needed by scripts too)
 
 # LS_COLORS: Colorizes files in ls, fd, and tab completion.
 # From Nord dircolors (https://github.com/arcticicestudio/nord-dircolors)
