@@ -14,11 +14,8 @@ enter_accept = true
 # Use vim keybindings in atuin search
 keymap_mode = "vim-insert"
 
-# Style: compact uses less screen space
-style = "compact"
-
 # Limit inline search height (up arrow / Ctrl+P)
-inline_height = 10
+inline_height = 9
 
 # Filter to current host by default (more relevant results)
 filter_mode = "host"
