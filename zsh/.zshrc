@@ -290,9 +290,12 @@ fi
 (( $+commands[zoxide] )) && eval "$(zoxide init zsh)"
 
 # --- atuin (better history) ---
-# Provides: Ctrl+R (replaces fzf history search)
+# Provides: Ctrl+R, up/down arrows for history search
 # Must load AFTER fzf to override Ctrl+R binding
-(( $+commands[atuin] )) && eval "$(atuin init zsh)"
+if (( $+commands[atuin] )); then
+    eval "$(atuin init zsh)"
+    bindkey -M viins '^P' atuin-up-search-viins  # Ctrl+P triggers atuin like up arrow
+fi
 
 # --- Prompt ---
 # Clean prompt with useful info:
