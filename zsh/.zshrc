@@ -6,7 +6,6 @@
 #
 # DATA LOCATIONS (XDG-compliant):
 #   ~/.local/share/zinit/  - Zinit plugin manager and all plugins
-#   ~/.local/share/zsh/    - Persistent data (cdr recent directories)
 #   ~/.cache/zsh/          - Cache (completions dump and cache)
 #
 # STRUCTURE:
@@ -15,10 +14,9 @@
 #   3. Zinit + Plugins   - Plugin manager with proper load ordering
 #   4. Completions       - Tab completion settings (after compinit)
 #   5. Keybindings       - Vi mode, navigation, custom bindings
-#   6. Recent Dirs       - Built-in cdr for quick directory access
-#   7. Aliases           - Git, Mercurial, modern CLI tools
-#   8. Tool Integrations - fzf, zoxide, atuin, starship
-#   9. Local Overrides   - Machine-specific config (~/.zshlocalrc)
+#   6. Aliases           - Git, Mercurial, modern CLI tools
+#   7. Tool Integrations - fzf, zoxide, atuin
+#   8. Local Overrides   - Machine-specific config (~/.zshlocalrc)
 # ==============================================================================
 
 
@@ -29,30 +27,18 @@
 export EDITOR=nvim
 export PAGER=less
 
-# LS_COLORS: Colorizes files in ls, eza, and tab completion.
+# LS_COLORS: Colorizes files in ls, fd, and tab completion.
 # From Nord dircolors (https://github.com/arcticicestudio/nord-dircolors)
-# Format: "type=ANSI_code:..." - see `dircolors --print-database`
 LS_COLORS='no=00:rs=0:fi=00:di=01;34:ln=36:mh=04;36:pi=04;01;36:so=04;33:do=04;01;36:bd=01;33:cd=33:or=31:mi=01;37;41:ex=01;36:su=01;04;37:sg=01;04;37:ca=01;37:tw=01;37;44:ow=01;04;34:st=04;37;44:*.7z=01;32:*.ace=01;32:*.alz=01;32:*.arc=01;32:*.arj=01;32:*.bz=01;32:*.bz2=01;32:*.cab=01;32:*.cpio=01;32:*.deb=01;32:*.dz=01;32:*.ear=01;32:*.gz=01;32:*.jar=01;32:*.lha=01;32:*.lrz=01;32:*.lz=01;32:*.lz4=01;32:*.lzh=01;32:*.lzma=01;32:*.lzo=01;32:*.rar=01;32:*.rpm=01;32:*.rz=01;32:*.sar=01;32:*.t7z=01;32:*.tar=01;32:*.taz=01;32:*.tbz=01;32:*.tbz2=01;32:*.tgz=01;32:*.tlz=01;32:*.txz=01;32:*.tz=01;32:*.tzo=01;32:*.tzst=01;32:*.war=01;32:*.xz=01;32:*.z=01;32:*.Z=01;32:*.zip=01;32:*.zoo=01;32:*.zst=01;32:*.aac=32:*.au=32:*.flac=32:*.m4a=32:*.mid=32:*.midi=32:*.mka=32:*.mp3=32:*.mpa=32:*.mpeg=32:*.mpg=32:*.ogg=32:*.opus=32:*.ra=32:*.wav=32:*.3des=01;35:*.aes=01;35:*.gpg=01;35:*.pgp=01;35:*.doc=32:*.docx=32:*.dot=32:*.odg=32:*.odp=32:*.ods=32:*.odt=32:*.otg=32:*.otp=32:*.ots=32:*.ott=32:*.pdf=32:*.ppt=32:*.pptx=32:*.xls=32:*.xlsx=32:*.app=01;36:*.bat=01;36:*.btm=01;36:*.cmd=01;36:*.com=01;36:*.exe=01;36:*.reg=01;36:*~=02;37:*.bak=02;37:*.BAK=02;37:*.log=02;37:*.old=02;37:*.OLD=02;37:*.orig=02;37:*.ORIG=02;37:*.swo=02;37:*.swp=02;37:*.bmp=32:*.cgm=32:*.dl=32:*.dvi=32:*.emf=32:*.eps=32:*.gif=32:*.jpeg=32:*.jpg=32:*.JPG=32:*.mng=32:*.pbm=32:*.pcx=32:*.pgm=32:*.png=32:*.PNG=32:*.ppm=32:*.pps=32:*.ppsx=32:*.ps=32:*.svg=32:*.svgz=32:*.tga=32:*.tif=32:*.tiff=32:*.xbm=32:*.xcf=32:*.xpm=32:*.xwd=32:*.yuv=32:*.anx=32:*.asf=32:*.avi=32:*.axv=32:*.flc=32:*.fli=32:*.flv=32:*.gl=32:*.m2v=32:*.m4v=32:*.mkv=32:*.mov=32:*.MOV=32:*.mp4=32:*.mpeg=32:*.mpg=32:*.nuv=32:*.ogm=32:*.ogv=32:*.ogx=32:*.qt=32:*.rm=32:*.rmvb=32:*.swf=32:*.vob=32:*.webm=32:*.wmv=32:'
 export LS_COLORS
-
-# Linux TTY: Set Catppuccin Mocha colors for raw console (TERM=linux only)
-if [[ "$TERM" = "linux" ]]; then
-    printf %b '\e]P01E1E2E' '\e]P8585B70' '\e]P7BAC2DE' '\e]PFA6ADC8'
-    printf %b '\e]P1F38BA8' '\e]P9F38BA8' '\e]P2A6E3A1' '\e]PAA6E3A1'
-    printf %b '\e]P3F9E2AF' '\e]PBF9E2AF' '\e]P489B4FA' '\e]PC89B4FA'
-    printf %b '\e]P5F5C2E7' '\e]PDF5C2E7' '\e]P694E2D5' '\e]PE94E2D5'
-    clear
-fi
 
 
 # ==============================================================================
 # 2. SHELL OPTIONS
 # ==============================================================================
 
-# XDG directories for zsh data
-ZSH_DATA_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/zsh"
 ZSH_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/zsh"
-mkdir -p "$ZSH_DATA_DIR" "$ZSH_CACHE_DIR"
+mkdir -p "$ZSH_CACHE_DIR"
 
 skip_global_compinit=1    # Skip Debian's premature compinit
 unsetopt flow_control     # Disable Ctrl+S/Q (terminal freeze)
@@ -205,17 +191,6 @@ zstyle ':completion:*:descriptions' format '%F{white}%B%d%b%f'
 zstyle ':completion::complete:*' use-cache yes
 zstyle ':completion::complete:*' cache-path "$ZSH_CACHE_DIR/compcache"
 
-# Ignore system users in completion
-zstyle ':completion:*:*:*:users' ignored-patterns \
-    adm amanda apache at avahi avahi-autoipd beaglidx bin cacti canna \
-    clamav daemon dbus distcache dnsmasq dovecot fax ftp games gdm \
-    gkrellmd gopher hacluster haldaemon halt hsqldb ident junkbust kdm \
-    ldap lp mail mailman mailnull man messagebus mldonkey mysql nagios \
-    named netdump news nfsnobody nobody nscd ntp nut nx obsrun openvpn \
-    operator pcap polkitd postfix postgres privoxy pulse pvm quagga radvd \
-    rpc rpcuser rpm rtkit scard shutdown squid sshd statd svn sync tftp \
-    usbmux uucp vcsa wwwrun xfs '_*'
-
 
 # ==============================================================================
 # 5. KEYBINDINGS
@@ -281,31 +256,7 @@ bindkey -rM vicmd '^L'
 
 
 # ==============================================================================
-# 6. RECENT DIRECTORIES (cdr)
-# ==============================================================================
-# Built-in zsh recent directory tracking.
-# `d` lists recent dirs, `1`-`9` jumps to them.
-# Data stored in ~/.local/share/zsh/cdr-recent-dirs
-# ==============================================================================
-
-autoload -Uz chpwd_recent_dirs cdr add-zsh-hook
-add-zsh-hook chpwd chpwd_recent_dirs
-zstyle ':chpwd:*' recent-dirs-file "$ZSH_DATA_DIR/cdr-recent-dirs"
-zstyle ':chpwd:*' recent-dirs-max 1000
-zstyle ':chpwd:*' recent-dirs-default yes
-
-alias d='cdr -l | head -10'
-alias 1='cdr 1' 2='cdr 2' 3='cdr 3' 4='cdr 4' 5='cdr 5'
-alias 6='cdr 6' 7='cdr 7' 8='cdr 8' 9='cdr 9'
-
-# Quick parent directory navigation
-alias -g ...='../..'
-alias -g ....='../../..'
-alias -g .....='../../../..'
-
-
-# ==============================================================================
-# 7. ALIASES
+# 6. ALIASES
 # ==============================================================================
 
 # --- Git ---
@@ -371,7 +322,7 @@ alias grep='grep --color=auto'
 
 
 # ==============================================================================
-# 8. TOOL INTEGRATIONS
+# 7. TOOL INTEGRATIONS
 # ==============================================================================
 
 # --- fzf (fuzzy finder) ---
@@ -423,7 +374,7 @@ PROMPT='%F{green}%m%f:%F{blue}%~%f %(?.%#.%F{red}%#%f) '
 
 
 # ==============================================================================
-# 9. LOCAL OVERRIDES
+# 8. LOCAL OVERRIDES
 # ==============================================================================
 # Machine-specific config that shouldn't be in version control.
 # Create ~/.zshlocalrc for local aliases, PATH additions, etc.
