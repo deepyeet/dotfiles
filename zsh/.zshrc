@@ -160,7 +160,6 @@ zinit light zdharma-continuum/fast-syntax-highlighting
 # fzf-tab replaces the menu UI; we only need matching logic and cache.
 # ==============================================================================
 
-zmodload -i zsh/complist
 setopt complete_in_word always_to_end
 
 # Matching: case-insensitive, exact, partial-suffix, substring (tried in order)
@@ -195,13 +194,6 @@ zle -N zle-line-init
 
 # Redraw prompt on terminal resize
 TRAPWINCH() { zle && zle -R }
-
-# Menu navigation with hjkl
-zmodload zsh/terminfo
-bindkey -M menuselect 'h' vi-backward-char
-bindkey -M menuselect 'j' vi-down-line-or-history
-bindkey -M menuselect 'k' vi-up-line-or-history
-bindkey -M menuselect 'l' vi-forward-char
 
 # Autosuggestions: Ctrl+Space to accept
 bindkey '^ ' autosuggest-accept
