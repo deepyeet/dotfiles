@@ -216,6 +216,29 @@ zle -N edit-command-line
 bindkey -M vicmd 'v' edit-command-line      # v in command mode (vi tradition)
 bindkey -M viins '^X^E' edit-command-line   # Ctrl+X Ctrl+E in insert mode (bash tradition)
 
+# Ctrl+X Ctrl+R: cd to project root (hg/git, or walk up for markers)
+# Repeated presses jump to parent project roots (nested repos/monorepos)
+PROJECT_ROOT_MARKERS=("*.project.toml" BUILD Cargo.toml package.json)
+_find_project_root() {
+    local dir="$PWD"
+    while [[ "$dir" != "/" && "$dir" != "$HOME" ]]; do
+        for m in "${PROJECT_ROOT_MARKERS[@]}"; do
+            local matches=("$dir"/$~m(N))
+            # Found a root - return it unless we're already there
+            (( ${#matches} )) && [[ "$dir" != "$PWD" ]] && echo "$dir" && return
+            (( ${#matches} )) && break  # Skip current dir, keep searching up
+        done
+        dir="${dir:h}"
+    done
+    # VCS fallback - also skip if equals $PWD
+    local root
+    root=$(hg root 2>/dev/null) && [[ "$root" != "$PWD" ]] && echo "$root" && return
+    root=$(git rev-parse --show-toplevel 2>/dev/null) && [[ "$root" != "$PWD" ]] && echo "$root" && return
+}
+_project_root_widget() { local r="$(_find_project_root)"; [[ -n "$r" ]] && cd "$r" && zle reset-prompt || zle -M "No project root"; }
+zle -N _project_root_widget
+bindkey -M viins '^X^R' _project_root_widget
+
 
 # ==============================================================================
 # 6. ALIASES
@@ -338,6 +361,35 @@ if (( $+commands[fzf] )); then
         --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 \
         --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
         --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8"
+
+    # fzf Alt+C/Ctrl+T config (append to arrays in .zshlocalrc)
+    # Patterns can be relative (match anywhere) or absolute (match only that path)
+    FZF_EXCLUDE_PATTERNS=(node_modules .git .hg __pycache__ .cache)
+    FZF_INCLUDE_DIRS=()  # Paths to include even if under excluded parent
+
+    _fzf_build_commands() {
+        local excludes_static=""
+        local excludes_dynamic=""
+
+        for p in "${FZF_EXCLUDE_PATTERNS[@]}"; do
+            if [[ "$p" == /* ]]; then
+                # Absolute: only exclude if under $PWD (checked at runtime)
+                excludes_dynamic+="[[ '$p' == \"\$PWD\"/* ]] && echo \"--exclude './${p#\$PWD/}'\"; "
+            else
+                # Relative: always exclude
+                excludes_static+="--exclude '$p' "
+            fi
+        done
+
+        # Include dirs: check at runtime if under $PWD
+        local include_cmds=""
+        for dir in "${FZF_INCLUDE_DIRS[@]}"; do
+            include_cmds+="[[ '$dir' == \"\$PWD\"/* || '$dir' == \"\$PWD\" ]] && fd --type d . '$dir'; "
+        done
+
+        export FZF_ALT_C_COMMAND="{ fd --type d $excludes_static \$($excludes_dynamic) .; $include_cmds } 2>/dev/null"
+        export FZF_CTRL_T_COMMAND="fd --type f $excludes_static \$($excludes_dynamic) . 2>/dev/null"
+    }
 fi
 
 # --- zoxide (smart cd) ---
@@ -368,3 +420,6 @@ PROMPT='%F{green}%m%f:%F{blue}%~%f %(?.%#.%F{red}%#%f) '
 # ==============================================================================
 
 [[ -f "${HOME}/.zshlocalrc" ]] && source "${HOME}/.zshlocalrc"
+
+# Build fzf commands after local overrides have appended to FZF_EXCLUDE_PATTERNS
+(( $+functions[_fzf_build_commands] )) && _fzf_build_commands
