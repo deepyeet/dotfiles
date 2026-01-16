@@ -73,8 +73,9 @@ Shell history manager. Config at `atuin/.config/atuin/config.toml`.
 1. Bootstrap lazy.nvim
 2. Load `config.options` (sets mapleader)
 3. Load `config.keymaps`
-4. Run `lazy.setup("plugins")`
-5. Optional local overrides via `pcall(require, 'local')`
+4. Load `config.autocmds`
+5. Run `lazy.setup("plugins")`
+6. Optional local overrides via `pcall(require, 'local')`
 
 **Plugin organization (`lua/plugins/`):**
 - `ui.lua` - Colorscheme (Catppuccin), which-key, mini.icons

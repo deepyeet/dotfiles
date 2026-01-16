@@ -25,15 +25,20 @@ vim.keymap.set('n', '<leader>q', ':bd<cr>', { silent = true, noremap = true })  
 -- ==============================================================================
 -- File Explorer (mini.files)
 -- ==============================================================================
--- Backslash toggles file explorer at current file's location
--- reveal_cwd() highlights the file in the tree after opening
+-- Backslash toggles file explorer
+-- Opens at current file if it's under cwd, otherwise opens at cwd
 vim.keymap.set('n', '\\', function()
   local mini_files = require('mini.files')
-  local _ = mini_files.close() or
-    mini_files.open(vim.api.nvim_buf_get_name(0), false)
-  vim.defer_fn(function()
-    mini_files.reveal_cwd()
-  end, 30)  -- Small delay needed for mini.files to initialize
+  local cwd = vim.fn.getcwd()
+  local buf_path = vim.api.nvim_buf_get_name(0)
+
+  -- If current file is under cwd, open at file location; otherwise open at cwd
+  local open_path = cwd
+  if buf_path ~= '' and buf_path:sub(1, #cwd + 1) == cwd .. '/' then
+    open_path = buf_path
+  end
+
+  local _ = mini_files.close() or mini_files.open(open_path, false)
 end, { noremap = true, silent = true })
 
 -- ==============================================================================

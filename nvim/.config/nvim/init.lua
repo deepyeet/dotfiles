@@ -30,6 +30,7 @@ vim.opt.rtp:prepend(lazypath)
 -- Load core config before plugins
 require("config.options")
 require("config.keymaps")
+require("config.autocmds")
 
 -- Machine-specific overrides (e.g., work vs personal)
 -- Create lua/local.lua for settings that shouldn't be in git

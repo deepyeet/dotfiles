@@ -171,9 +171,9 @@ zstyle ':completion::complete:*' cache-path "$ZSH_CACHE_DIR/compcache"
 # Colorize completions using LS_COLORS
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 
-# fzf-tab: Tab accepts, preview with eza, use tmux popup
+# fzf-tab: Tab cycles through items, preview with eza, use tmux popup
 # $realpath is provided by fzf-tab - the resolved path of the completion candidate
-zstyle ':fzf-tab:*' fzf-bindings 'tab:accept'
+zstyle ':fzf-tab:*' fzf-bindings 'tab:down' 'shift-tab:up'
 zstyle ':fzf-tab:*' fzf-command ftb-tmux-popup
 zstyle ':fzf-tab:*' popup-min-size 120 30
 zstyle ':fzf-tab:*' popup-pad 5 2
