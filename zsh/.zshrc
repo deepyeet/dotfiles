@@ -368,27 +368,36 @@ if (( $+commands[fzf] )); then
     FZF_INCLUDE_DIRS=()  # Paths to include even if under excluded parent
 
     _fzf_build_commands() {
+        # Build exclude args - relative patterns are static, absolute are dynamic
         local excludes_static=""
         local excludes_dynamic=""
+        local abs_paths=()
 
         for p in "${FZF_EXCLUDE_PATTERNS[@]}"; do
             if [[ "$p" == /* ]]; then
-                # Absolute: only exclude if under $PWD (checked at runtime)
-                excludes_dynamic+="[[ '$p' == \"\$PWD\"/* ]] && echo \"--exclude './${p#\$PWD/}'\"; "
+                abs_paths+=("$p")
             else
-                # Relative: always exclude
                 excludes_static+="--exclude '$p' "
             fi
         done
 
-        # Include dirs: check at runtime if under $PWD
-        local include_cmds=""
-        for dir in "${FZF_INCLUDE_DIRS[@]}"; do
-            include_cmds+="[[ '$dir' == \"\$PWD\"/* || '$dir' == \"\$PWD\" ]] && fd --type d . '$dir'; "
-        done
+        # Build absolute path check as runtime loop
+        if (( ${#abs_paths} )); then
+            local quoted_paths=""
+            for p in "${abs_paths[@]}"; do quoted_paths+="'$p' "; done
+            excludes_dynamic="for p in $quoted_paths; do [[ \"\$p\" == \"\$PWD\"/* ]] && excludes+=(--exclude \"\${p#\$PWD/}\"); done; "
+        fi
 
-        export FZF_ALT_C_COMMAND="{ fd --type d $excludes_static \$($excludes_dynamic) .; $include_cmds } 2>/dev/null"
-        export FZF_CTRL_T_COMMAND="fd --type f $excludes_static \$($excludes_dynamic) . 2>/dev/null"
+        # Build include dirs command
+        local include_cmd=""
+        if (( ${#FZF_INCLUDE_DIRS} )); then
+            local quoted_dirs=""
+            for d in "${FZF_INCLUDE_DIRS[@]}"; do quoted_dirs+="'$d' "; done
+            include_cmd="for d in $quoted_dirs; do [[ \"\$d\" == \"\$PWD\"/* || \"\$d\" == \"\$PWD\" ]] && fd --type d . \"\$d\" 2>/dev/null; done"
+        fi
+
+        export FZF_ALT_C_COMMAND="{ excludes=($excludes_static); $excludes_dynamic fd --type d \"\${excludes[@]}\" . 2>/dev/null; $include_cmd }"
+        export FZF_CTRL_T_COMMAND="{ excludes=($excludes_static); $excludes_dynamic fd --type f \"\${excludes[@]}\" . 2>/dev/null; }"
     }
 fi
 
