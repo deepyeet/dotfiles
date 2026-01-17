@@ -215,6 +215,7 @@ autoload -Uz edit-command-line
 zle -N edit-command-line
 bindkey -M vicmd 'v' edit-command-line      # v in command mode (vi tradition)
 bindkey -M viins '^X^E' edit-command-line   # Ctrl+X Ctrl+E in insert mode (bash tradition)
+bindkey -M viins '^_' undo                   # Ctrl+/ undo in insert mode
 
 # Ctrl+X Ctrl+R: cd to project root (hg/git, or walk up for markers)
 # Repeated presses jump to parent project roots (nested repos/monorepos)
