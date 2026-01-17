@@ -403,8 +403,21 @@ if (( $+commands[fzf] )); then
 fi
 
 # --- zoxide (smart cd) ---
-# Provides: z (jump), zi (interactive)
-(( $+commands[zoxide] )) && eval "$(zoxide init zsh)"
+# Provides: z (jump), zi (interactive), Ctrl+G (interactive picker)
+if (( $+commands[zoxide] )); then
+    eval "$(zoxide init zsh)"
+    # Ctrl+G: zoxide interactive picker (like zi but as a widget)
+    _zoxide_widget() {
+        local result="$(zoxide query -i)"
+        if [[ -n "$result" ]]; then
+            BUFFER="cd ${(q)result}"
+            zle accept-line
+        fi
+        zle reset-prompt
+    }
+    zle -N _zoxide_widget
+    bindkey '^G' _zoxide_widget
+fi
 
 # --- atuin (better history) ---
 # Provides: Ctrl+R, up/down arrows for history search
