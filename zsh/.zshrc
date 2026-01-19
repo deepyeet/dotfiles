@@ -308,7 +308,12 @@ if (( $+commands[bat] )); then
 fi
 
 # fd: alias fdfind on Debian/Ubuntu
-(( $+commands[fdfind] )) && (( ! $+commands[fd] )) && alias fd='fdfind'
+# I hate people so much
+local fd_cmd="fd"
+if (( $+commands[fdfind] )) && (( ! $+commands[fd] )); then
+    alias fd='fdfind'
+    fd_cmd="fdfind"
+fi
 
 # grep: always colorize
 alias grep='grep --color=auto'
@@ -358,10 +363,10 @@ if (( $+commands[fzf] )); then
         fi
     fi
 
-    export FZF_DEFAULT_OPTS=" \
-        --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 \
-        --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
-        --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8"
+    #export FZF_DEFAULT_OPTS=" \
+    #    --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 \
+    #    --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
+    #    --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8"
 
     # fzf Alt+C/Ctrl+T config (append to arrays in .zshlocalrc)
     # Patterns can be relative (match anywhere) or absolute (match only that path)
@@ -370,35 +375,34 @@ if (( $+commands[fzf] )); then
 
     _fzf_build_commands() {
         # Build exclude args - relative patterns are static, absolute are dynamic
-        local excludes_static=""
-        local excludes_dynamic=""
-        local abs_paths=()
+        local -a excludes=()
+        local -a abs_paths=()
 
         for p in "${FZF_EXCLUDE_PATTERNS[@]}"; do
             if [[ "$p" == /* ]]; then
-                abs_paths+=("$p")
+                # BUG: this CAN end up with --exclude '' if same PWD == exclude
+                # Could use realpath but the shitty fix is to make nothing ends
+                # in / This means nothing will be excluded if you browse from
+                # an excluded folder because it's the full absolute path lol
+                excludes+=("--exclude \"\${\${\${:-$p}:A}#\$PWD/}\"")
             else
-                excludes_static+="--exclude '$p' "
+                excludes+=("--exclude '$p'")
             fi
         done
 
-        # Build absolute path check as runtime loop
-        if (( ${#abs_paths} )); then
-            local quoted_paths=""
-            for p in "${abs_paths[@]}"; do quoted_paths+="'$p' "; done
-            excludes_dynamic="for p in $quoted_paths; do [[ \"\$p\" == \"\$PWD\"/* ]] && excludes+=(--exclude \"\${p#\$PWD/}\"); done; "
-        fi
-
-        # Build include dirs command
-        local include_cmd=""
+        # directories to never exclude as part of above. useful for monorepos
+        # this basically triggers an additional fd to add more results in each subdir
+        local -a include_fd_alt_c=()
+        local -a include_fd_ctrl_t=()
         if (( ${#FZF_INCLUDE_DIRS} )); then
-            local quoted_dirs=""
-            for d in "${FZF_INCLUDE_DIRS[@]}"; do quoted_dirs+="'$d' "; done
-            include_cmd="for d in $quoted_dirs; do [[ \"\$d\" == \"\$PWD\"/* || \"\$d\" == \"\$PWD\" ]] && fd --type d . \"\$d\" 2>/dev/null; done"
+            for d in "${FZF_INCLUDE_DIRS[@]}"; do
+              include_fd_alt_c+=("if [[ \"\${\${:-$d}:A}\" == \"\${PWD:A}\"/* ]]; then $fd_cmd --type d . \"\${\${:-$d}#\$PWD/}\" 2>/dev/null; fi")
+              include_fd_ctrl_t+=("if [[ \"\${\${:-$d}:A}\" == \"\${PWD:A}\"/* ]]; then $fd_cmd --type f . \"\${\${:-$d}#\$PWD/}\" 2>/dev/null; fi")
+            done
         fi
 
-        export FZF_ALT_C_COMMAND="{ excludes=($excludes_static); $excludes_dynamic fd --type d \"\${excludes[@]}\" . 2>/dev/null; $include_cmd }"
-        export FZF_CTRL_T_COMMAND="{ excludes=($excludes_static); $excludes_dynamic fd --type f \"\${excludes[@]}\" . 2>/dev/null; }"
+        export FZF_ALT_C_COMMAND="$fd_cmd --type d ${excludes[@]} 2>/dev/null; ${include_fd_alt_c[@]}"
+        export FZF_CTRL_T_COMMAND="$fd_cmd --type f ${excludes[@]} 2>/dev/null; ${include_fd_ctrl_t[@]}"
     }
 fi
 
