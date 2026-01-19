@@ -1,19 +1,29 @@
 -- ==============================================================================
--- LSP & Completion
+-- LSP & Completion - Managed by Mason
 -- ==============================================================================
 return {
-  -- LSP Configuration (language servers for diagnostics, go-to-definition, etc.)
-  -- Note: Language servers must be installed separately (e.g., pyright, lua_ls)
-  -- Configure servers in lua/local.lua or add lspconfig.{server}.setup() calls
+  -- LSP Configuration & Server Management
+  {
+    "mason-org/mason-lspconfig.nvim",
+    opts = {},
+    dependencies = {
+      { "mason-org/mason.nvim", opts = {} },
+      "neovim/nvim-lspconfig",
+    },
+  },
+  {
+    "mason-org/mason.nvim",
+    opts = {}
+  },
   {
     "neovim/nvim-lspconfig",
-    event = { "BufReadPost", "BufNewFile" },  -- Load when opening files
-    cmd = { "LspInfo", "LspInstall", "LspUninstall" },
-    dependencies = {},
+    dependencies = {
+      { "williamboman/mason.nvim" },
+    },
   },
 
-  -- Blink.cmp: Fast completion engine (async, written in Rust)
-  -- Enter to accept, Tab/S-Tab to navigate, C-space to show docs
+  -- Blink.cmp: Fast completion engine
+  -- This is returned to its original, simple configuration.
   {
     "saghen/blink.cmp",
     lazy = false,      -- Handles its own lazy-loading
