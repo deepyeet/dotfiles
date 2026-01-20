@@ -2,26 +2,11 @@
 -- Treesitter: Syntax parsing for better highlighting, indentation, and more
 -- ==============================================================================
 
--- Work machines can't run tree-sitter CLI, freeze to last version without it
--- v0.9.3 is the last version before tree-sitter CLI became required
-local ts_version = _G.is_work and "v0.9.3" or false
-
 return {
   -- Core treesitter (syntax highlighting and indentation)
   {
     "nvim-treesitter/nvim-treesitter",
-    version = ts_version,
-    build = ":TSUpdate",                          -- Auto-update parsers
     event = { "BufReadPost", "BufNewFile" },
-    opts = {
-      highlight = { enable = true },              -- Syntax highlighting
-      indent = { enable = true },                 -- Treesitter-based indentation
-      auto_install = not _G.is_work,              -- Don't auto-install at work (no CLI)
-      ensure_installed = {                        -- Always install these parsers
-        "c", "cpp", "lua", "vim", "vimdoc", "query",
-        "markdown", "markdown_inline", "python",
-      },
-    },
   },
 
   -- Treesitter context: Sticky header showing current function/class
