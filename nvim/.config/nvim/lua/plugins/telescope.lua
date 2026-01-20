@@ -52,18 +52,16 @@ return {
     keys = function()
       local builtin = require('telescope.builtin')
       return {
-        -- File finding
+        -- The kings of Telescope - keep these short and fast
         { "<C-p>", builtin.find_files, desc = "find files" },
         { "<C-n>", function() builtin.find_files({ search_dirs = { "%:p:h" } }) end, desc = "Files (cwd)" },
-
-        -- Grep (requires ripgrep)
         { "<leader>r", builtin.live_grep, desc = "live ripgrep" },
         { "<leader>R", builtin.grep_string, desc = "ripgrep string" },
-        { "<leader>c", builtin.current_buffer_fuzzy_find, desc = "fuzzy find" },
+        { "<leader>b", function() require('telescope.builtin').buffers({ sort_mru = true, ignore_current_buffer = true }) end, desc = "buffers" },
+        { "<leader><leader>", builtin.resume, desc = "resume" },
 
         -- Buffers and history
-        { "<leader>b", function() require('telescope.builtin').buffers({ sort_mru = true, ignore_current_buffer = true }) end, desc = "buffers" },
-        { "<leader>ff", builtin.resume, desc = "resume" },
+        { "<leader>ff", builtin.current_buffer_fuzzy_find, desc = "fuzzy find" },
         { "<leader>fj", builtin.jumplist, desc = "jumplist" },
         { "<leader>fh", builtin.oldfiles, desc = "old files" },
         { "<leader>f:", builtin.command_history, desc = "command history" },
@@ -77,13 +75,27 @@ return {
         { "<leader>fq", builtin.quickfix, desc = "quickfix" },
         { "<leader>fl", builtin.loclist, desc = "loclist" },
 
+        -- Sessions
+        { '<leader>fs', function() require('persistence').select() end, desc = 'sessions' },
+
         -- LSP integration
         { "<leader>grr", builtin.lsp_references, desc = "lsp references" },
         { "<leader>gri", builtin.lsp_implementations, desc = "lsp implementations" },
         { "<leader>gO", builtin.lsp_document_symbols, desc = "document symbols" },
         { "<leader>gd", builtin.lsp_definitions, desc = "lsp definitions" },
 
+        {
+          '<leader>fo',
+          function()
+            require('telescope.builtin').lsp_document_symbols({
+              symbols = { 'Class', 'Struct', 'Function', 'Method', 'Interface', 'Enum', 'Module', 'Namespace' },
+            })
+          end,
+          desc = 'Outline (document symbols)',
+        },
+
         -- Tab picker (shows each tab's working directory)
+        -- This is under <leader>t because a bunch of <leader>t things exist to manage tabs
         { "<leader>tt", function()
           local tabs = {}
           for i = 1, vim.fn.tabpagenr('$') do
