@@ -396,8 +396,8 @@ if (( $+commands[fzf] )); then
         local -a include_fd_ctrl_t=()
         if (( ${#FZF_INCLUDE_DIRS} )); then
             for d in "${FZF_INCLUDE_DIRS[@]}"; do
-              include_fd_alt_c+=("if [[ \"\${\${:-$d}:A}\" == \"\${PWD:A}\"/* ]]; then $fd_cmd --type d . \"\${\${:-$d}#\$PWD/}\" 2>/dev/null; fi")
-              include_fd_ctrl_t+=("if [[ \"\${\${:-$d}:A}\" == \"\${PWD:A}\"/* ]]; then $fd_cmd --type f . \"\${\${:-$d}#\$PWD/}\" 2>/dev/null; fi")
+              include_fd_alt_c+=("if [[ \"\${\${:-$d}:A}\" == \"\${PWD:A}\"/* ]]; then $fd_cmd --type d . \"\${\${:-$d}#\$PWD/}\" 2>/dev/null; fi;")
+              include_fd_ctrl_t+=("if [[ \"\${\${:-$d}:A}\" == \"\${PWD:A}\"/* ]]; then $fd_cmd --type f . \"\${\${:-$d}#\$PWD/}\" 2>/dev/null; fi;")
             done
         fi
 
