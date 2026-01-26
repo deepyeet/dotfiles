@@ -36,7 +36,7 @@ return {
         nerd_font_variant = "mono",  -- For proper icon rendering
       },
       sources = {
-        default = { "lsp", "path", "buffer", },  -- Completion sources in priority order
+        default = { "lsp", "path", "buffer", "obsidian", "obsidian_new", "obsidian_tags" },  -- Completion sources in priority order
       },
       signature = { enabled = true },  -- Show function signatures while typing
     },
