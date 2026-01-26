@@ -29,6 +29,10 @@ return {
         blink = true,
         min_chars = 1,
       },
+      daily_notes = {
+        folder = 'daily-notes',
+        template = 'templates/daily-note.md',
+      },
       templates = {
         folder = "templates",
         date_format = "%Y-%m-%d",
