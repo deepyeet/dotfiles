@@ -1,7 +1,21 @@
 -- Helper functions for obsidian.nvim customizations
+
+-- Generate YYYYMMDDHHmm format timestamp
+local function get_timestamp()
+  return os.date("%Y%m%d%H%M")
+end
+
+-- Convert title to slug (lowercase, dashes)
+local function slugify(title)
+  if not title or title == "" then
+    return "untitled"
+  end
+  return title:lower():gsub("[^%w%s-]", ""):gsub("%s+", "-"):gsub("%-+", "-"):gsub("^%-", ""):gsub("%-$", "")
+end
+
 local function get_display_name(note)
   if note.aliases and #note.aliases > 0 then
-    return note.aliases[#note.aliases]
+    return note.aliases[1]  -- Use FIRST alias (primary/best one)
   elseif note.title then
     return note.title
   else
@@ -9,14 +23,28 @@ local function get_display_name(note)
   end
 end
 
+local function format_note_title(title)
+  local timestamp = get_timestamp()
+  local slug = slugify(title or "")
+  return timestamp .. "-" .. slug .. ".md"
+end
+
 local function build_entries(notes)
   local entries = {}
   for _, note in ipairs(notes) do
     local display_name = get_display_name(note)
+    -- Build ordinal with all aliases for better fuzzy matching
+    local ordinal = display_name
+    if note.aliases then
+      for _, alias in ipairs(note.aliases) do
+        ordinal = ordinal .. " " .. alias
+      end
+    end
+
     entries[#entries + 1] = {
       value = note,
       display = display_name,
-      ordinal = display_name,
+      ordinal = ordinal,  -- Includes all aliases for searching
       filename = tostring(note.path),
       text = display_name,
     }
@@ -123,8 +151,49 @@ return {
         blink = true,
         min_chars = 1,
       },
+
+      -- Note ID: YYYYMMDDHHmm format
+      note_id_func = format_note_title,
+
+      -- Note path: YYYYMMDDHHmm-slug-title.md
+      note_path_func = function(spec)
+        return spec.dir / format_note_title(spec.title)
+      end,
+
+      -- Front matter with id, aliases, and tags
+      frontmatter = {
+        func = function(note)
+          local out = {
+            id = note.id or get_timestamp(),
+            aliases = note.aliases or {},
+            tags = note.tags or {},
+          }
+          -- Add title as first alias if provided and not already there
+          if note.title and note.title ~= "" then
+            local has_title = false
+            for _, alias in ipairs(out.aliases) do
+              if alias == note.title then
+                has_title = true
+                break
+              end
+            end
+            if not has_title then
+              table.insert(out.aliases, 1, note.title)
+            end
+          end
+          -- Merge any additional metadata from the note
+          if note.metadata and not vim.tbl_isempty(note.metadata) then
+            for k, v in pairs(note.metadata) do
+              out[k] = v
+            end
+          end
+          return out
+        end,
+      },
+
       daily_notes = {
         folder = "daily-notes",
+        date_format = "%Y%m%d0000-%Y-%m-%d",
         template = "templates/daily-note.md",
       },
       templates = {
