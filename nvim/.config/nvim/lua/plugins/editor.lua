@@ -9,16 +9,13 @@ return {
   {
     "folke/flash.nvim",
     event = "VeryLazy",
-    keys = {
-      { "s", mode = { "n", "x", "o" }, function() require("flash").jump() end, desc = "Flash" },
-      { "S", mode = { "n", "x", "o" }, function() require("flash").treesitter() end, desc = "Flash Treesitter" },
-      { "r", mode = "o", function() require("flash").remote() end, desc = "Remote Flash" },
-      { "R", mode = { "o", "x" }, function() require("flash").treesitter_search() end, desc = "Treesitter Search" },
-      { "f", mode = { "n", "x", "o" }, function() require("flash").jump({ continue = true }) end, desc = "Flash f" },
-      { "F", mode = { "n", "x", "o" }, function() require("flash").jump({ continue = true }) end, desc = "Flash F" },
-      { "t", mode = { "n", "x", "o" }, function() require("flash").jump({ continue = true }) end, desc = "Flash t" },
-      { "T", mode = { "n", "x", "o" }, function() require("flash").jump({ continue = true }) end, desc = "Flash T" },
-    },
+    opts = {},
+    init = function()
+      vim.keymap.set({ "n", "x", "o" }, "s", function() require("flash").jump() end, { desc = "Flash" })
+      vim.keymap.set({ "n", "x", "o" }, "S", function() require("flash").treesitter() end, { desc = "Flash Treesitter" })
+      vim.keymap.set("o", "r", function() require("flash").remote() end, { desc = "Remote Flash" })
+      vim.keymap.set({ "o", "x" }, "R", function() require("flash").treesitter_search() end, { desc = "Treesitter Search" })
+    end,
   },
 
   -- Mini.bracketed: Navigate with [x and ]x patterns

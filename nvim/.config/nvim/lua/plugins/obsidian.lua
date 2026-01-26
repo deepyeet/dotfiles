@@ -33,15 +33,30 @@ return {
         folder = "templates",
         date_format = "%Y-%m-%d",
         time_format = "%H:%M",
+        substitutions = {
+          yesterday = function()
+            return os.date("%Y-%m-%d", os.time() - 86400)
+          end,
+          tomorrow = function()
+            return os.date("%Y-%m-%d", os.time() + 86400)
+          end,
+          weekday = function()
+            return os.date("%A")
+          end,
+          week = function()
+            return os.date("%Y-W%V")
+          end,
+        },
       },
+      note_id_func = function(title)
+        return title
+      end,
       legacy_commands = false,
     },
   },
   {
     'MeanderingProgrammer/render-markdown.nvim',
     dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-mini/mini.icons' },
-    ---@module 'render-markdown'
-    ---@type render.md.UserConfig
     opts = {},
   }
 }
