@@ -48,9 +48,6 @@ return {
           end,
         },
       },
-      note_id_func = function(title)
-        return title
-      end,
       legacy_commands = false,
     },
   },
