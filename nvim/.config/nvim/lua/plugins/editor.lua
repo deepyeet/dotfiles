@@ -14,6 +14,10 @@ return {
       { "S", mode = { "n", "x", "o" }, function() require("flash").treesitter() end, desc = "Flash Treesitter" },
       { "r", mode = "o", function() require("flash").remote() end, desc = "Remote Flash" },
       { "R", mode = { "o", "x" }, function() require("flash").treesitter_search() end, desc = "Treesitter Search" },
+      { "f", mode = { "n", "x", "o" }, function() require("flash").jump({ continue = true }) end, desc = "Flash f" },
+      { "F", mode = { "n", "x", "o" }, function() require("flash").jump({ continue = true }) end, desc = "Flash F" },
+      { "t", mode = { "n", "x", "o" }, function() require("flash").jump({ continue = true }) end, desc = "Flash t" },
+      { "T", mode = { "n", "x", "o" }, function() require("flash").jump({ continue = true }) end, desc = "Flash T" },
     },
   },
 
@@ -71,27 +75,4 @@ return {
     dependencies = { "nvim-lua/plenary.nvim" },
     cmd = { "Spectre" },  -- Lazy load on command
   },
-
-  {
-    "nvim-neorg/neorg",
-    lazy = false,
-    version = "*",
-    config = function()
-      require("neorg").setup {
-        load = {
-          ["core.defaults"] = {},
-          ["core.concealer"] = {},
-          ["core.summary"] = {},
-          ["core.dirman"] = {
-            config = {
-              workspaces = {
-                default = vim.env.NEORG_PATH
-              },
-              default_workspace = "default",
-            },
-          },
-        },
-      }
-    end,
-  }
 }

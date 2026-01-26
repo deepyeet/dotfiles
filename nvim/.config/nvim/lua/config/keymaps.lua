@@ -1,12 +1,9 @@
 -- ==============================================================================
 -- KEYMAPS
 -- ==============================================================================
--- Leader: Space (most accessible with thumbs)
--- LocalLeader: Backslash (for filetype-specific mappings)
--- ==============================================================================
 
 vim.g.mapleader = ' '
-vim.g.maplocalleader = '\\'
+vim.g.maplocalleader = ',' -- Only works because flash.nvim helps me f{char}
 
 -- ==============================================================================
 -- Window Navigation (Ctrl+hjkl to move between splits)

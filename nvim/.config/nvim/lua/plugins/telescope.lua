@@ -5,11 +5,9 @@ return {
   {
     "nvim-telescope/telescope.nvim",
     dependencies = {
-      -- FZF algorithm for faster fuzzy matching (requires cmake)
+      { "nvim-lua/plenary.nvim" },
       { 'nvim-telescope/telescope-fzf-native.nvim', build = 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release --target install' },
-      -- Use telescope for vim.ui.select (code actions, etc.)
       { 'nvim-telescope/telescope-ui-select.nvim' },
-      -- Zoxide integration (frecency-based directory jumping)
       { 'jvgrootveld/telescope-zoxide' },
     },
     config = function()
@@ -93,34 +91,6 @@ return {
           end,
           desc = 'Outline (document symbols)',
         },
-
-        -- Tab picker (shows each tab's working directory)
-        -- This is under <leader>t because a bunch of <leader>t things exist to manage tabs
-        { "<leader>tt", function()
-          local tabs = {}
-          for i = 1, vim.fn.tabpagenr('$') do
-            local cwd = vim.fn.getcwd(-1, i):gsub(vim.env.HOME, "~")
-            table.insert(tabs, { nr = i, cwd = cwd, display = i .. ": " .. cwd })
-          end
-          require('telescope.pickers').new({}, {
-            prompt_title = "Tabs",
-            finder = require('telescope.finders').new_table({
-              results = tabs,
-              entry_maker = function(t)
-                return { value = t.nr, display = t.display, ordinal = t.display }
-              end,
-            }),
-            sorter = require('telescope.config').values.generic_sorter({}),
-            attach_mappings = function(_, map)
-              map('i', '<CR>', function(bufnr)
-                local entry = require('telescope.actions.state').get_selected_entry()
-                require('telescope.actions').close(bufnr)
-                if entry then vim.cmd("tabnext " .. entry.value) end
-              end)
-              return true
-            end,
-          }):find()
-        end, desc = "tabs" },
 
         -- Zoxide: frecency-based directory jumping (uses shell's zoxide database)
         { "<leader>z", "<cmd>Telescope zoxide list<cr>", desc = "zoxide (tcd)" },
