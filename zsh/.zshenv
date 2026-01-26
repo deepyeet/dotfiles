@@ -17,6 +17,7 @@ appendpath() {
 }
 
 [[ -d "$HOME/bin" ]] && appendpath "$HOME/bin"
+[[ -d "$HOME/.local/bin" ]] && appendpath "$HOME/.local/bin"
 
 # SSH agent socket (systemd user service)
 [[ -z "$SSH_AUTH_SOCK" ]] && export SSH_AUTH_SOCK="${XDG_RUNTIME_DIR}/ssh-agent.socket"
