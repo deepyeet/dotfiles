@@ -304,6 +304,7 @@ else
 fi
 
 if (( $+commands[bat] )); then
+    alias cat='bat'
     export MANPAGER="sh -c 'col -bx | bat -l man -p'"
 fi
 
@@ -367,6 +368,10 @@ if (( $+commands[fzf] )); then
     #    --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 \
     #    --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
     #    --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8"
+
+    # Previews for Ctrl+T (files) and Alt+C (directories)
+    export FZF_CTRL_T_OPTS="--preview 'bat --color=always --style=numbers --line-range :500 {} 2>/dev/null || cat {}'"
+    export FZF_ALT_C_OPTS="--preview 'eza --tree --color=always --icons {} | head -200'"
 
     # fzf Alt+C/Ctrl+T config (append to arrays in .zshlocalrc)
     # Patterns can be relative (match anywhere) or absolute (match only that path)
