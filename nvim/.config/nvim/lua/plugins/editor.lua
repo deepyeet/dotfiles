@@ -70,5 +70,28 @@ return {
     "nvim-pack/nvim-spectre",
     dependencies = { "nvim-lua/plenary.nvim" },
     cmd = { "Spectre" },  -- Lazy load on command
+  },
+
+  {
+    "nvim-neorg/neorg",
+    lazy = false,
+    version = "*",
+    config = function()
+      require("neorg").setup {
+        load = {
+          ["core.defaults"] = {},
+          ["core.concealer"] = {},
+          ["core.summary"] = {},
+          ["core.dirman"] = {
+            config = {
+              workspaces = {
+                default = vim.env.NEORG_PATH
+              },
+              default_workspace = "default",
+            },
+          },
+        },
+      }
+    end,
   }
 }
