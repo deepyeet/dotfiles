@@ -213,6 +213,17 @@ return {
   {
     "MeanderingProgrammer/render-markdown.nvim",
     dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-mini/mini.icons" },
-    opts = {},
+    opts = {
+      checkbox = {
+        unchecked = { icon = " ☐   ", highlight = "RenderMarkdownUnchecked" },
+        checked = { icon = " ☑   ", highlight = "RenderMarkdownChecked" },
+        custom = {
+          todo = { raw = "[-]", rendered = " ◐   ", highlight = "RenderMarkdownTodo" },
+          cancelled = { raw = "[~]", rendered = " ✗   ", highlight = "RenderMarkdownTodo" },
+          important = { raw = "[!]", rendered = " ⚠   ", highlight = "RenderMarkdownWarn" },
+          forwarded = { raw = "[>]", rendered = " →   ", highlight = "RenderMarkdownInfo" },
+        },
+      },
+    },
   },
 }
