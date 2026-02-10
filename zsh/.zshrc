@@ -389,7 +389,7 @@ if (( $+commands[fzf] )); then
                 # Could use realpath but the shitty fix is to make nothing ends
                 # in / This means nothing will be excluded if you browse from
                 # an excluded folder because it's the full absolute path lol
-                excludes+=("--exclude \"\${\${\${:-$p}:A}#\$PWD/}\"")
+                excludes+=("--exclude \"\${\${\${:-$p}:A}#\${PWD:A}/}\"")
             else
                 excludes+=("--exclude '$p'")
             fi
@@ -401,8 +401,8 @@ if (( $+commands[fzf] )); then
         local -a include_fd_ctrl_t=()
         if (( ${#FZF_INCLUDE_DIRS} )); then
             for d in "${FZF_INCLUDE_DIRS[@]}"; do
-              include_fd_alt_c+=("if [[ \"\${\${:-$d}:A}\" == \"\${PWD:A}\"/* ]]; then $fd_cmd --type d . \"\${\${:-$d}#\$PWD/}\" 2>/dev/null; fi;")
-              include_fd_ctrl_t+=("if [[ \"\${\${:-$d}:A}\" == \"\${PWD:A}\"/* ]]; then $fd_cmd --type f . \"\${\${:-$d}#\$PWD/}\" 2>/dev/null; fi;")
+              include_fd_alt_c+=("if [[ \"\${\${:-$d}:A}\" == \"\${PWD:A}\"/* ]]; then $fd_cmd --type d . \"\${\${:-$d}#\${PWD:A}/}\" 2>/dev/null; fi;")
+              include_fd_ctrl_t+=("if [[ \"\${\${:-$d}:A}\" == \"\${PWD:A}\"/* ]]; then $fd_cmd --type f . \"\${\${:-$d}#\${PWD:A}/}\" 2>/dev/null; fi;")
             done
         fi
 
